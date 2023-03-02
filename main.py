@@ -8,10 +8,10 @@ from environment import Env
 from explorer import Explorer
 from rescuer import Rescuer
 
-def main():
+def main(data_folder_name):
+   
     # Set the path to config files and data files for the environment
     current_folder = os.path.abspath(os.getcwd())
-    data_folder_name = 'data'
     data_folder = os.path.abspath(os.path.join(current_folder, data_folder_name))
 
     
@@ -34,4 +34,12 @@ def main():
     
         
 if __name__ == '__main__':
-    main()
+    """ To get data from a different folder than the default called data
+    pass it by the argument line"""
+    
+    if len(sys.argv) > 1:
+        data_folder_name = sys.argv[1]
+    else:
+        data_folder_name = "data"
+        
+    main(data_folder_name)
