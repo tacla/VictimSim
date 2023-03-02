@@ -9,5 +9,7 @@ Some features of the simulator:
 - controls the scheduling of each agent by its state: ACTIVE, IDLE, TERMINATED or DEAD (only ACTIVE agents can execute actions)
 - controls the executing time giving for each agent - once the time is expired, the agent dies.
 
-Rescuer and Explorer as provided in the packet use the main functionnalities of the simulator.
-The Explorer walks randomly in the environment while the Rescuer has a pre-defined plan.
+The rescuer.py and explorer.py as provided in the packet as examples of use of the  main functionnalities of the simulator.
+The Explorer walks randomly in the environment while the Rescuer has a stored plan. The execution is sequential. 
+When the explorer finishes the task of locating and reading the vital signals of victims, it calls the Rescuer agent to start
+the rescue task.
