@@ -1,4 +1,7 @@
-Replace the current __planner method of the rescuer.py by this:
+To run the simulator with these configuration files, you have to pass the data
+folder name in the command line: python main.py data_treino1
+
+Optionnally, replace the __planner method of the rescuer.py to see the rescuer walking:
 
     def __planner(self):
         """ A private method that calculates the walk actions to rescue the
