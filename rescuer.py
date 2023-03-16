@@ -1,16 +1,15 @@
-##  RESCUER AGENT
+"""##  RESCUER AGENT
 ### @Author: Tacla (UTFPR)
 ### Demo of use of VictimSim
+"""
 
-import os
-import random
 from abstract_agent import AbstractAgent
 from physical_agent import PhysAgent
-from abc import ABC, abstractmethod
 
-
-## Classe que define o Agente Rescuer com um plano fixo
 class Rescuer(AbstractAgent):
+    """Classe que define o Agente Rescuer com um plano fixo
+    """
+
     def __init__(self, env, config_file):
         """ 
         @param env: a reference to an instance of the environment class
@@ -21,21 +20,20 @@ class Rescuer(AbstractAgent):
         # Specific initialization for the rescuer
         self.plan = []              # a list of planned actions
         self.rtime = self.TLIM      # for controlling the remaining time
-        
+
         # Starts in IDLE state.
         # It changes to ACTIVE when the map arrives
         self.body.set_state(PhysAgent.IDLE)
 
         # planning
         self.__planner()
-    
+
     def go_save_victims(self, walls, victims):
         """ The explorer sends the map containing the walls and
         victims' location. The rescuer becomes ACTIVE. From now,
         the deliberate method is called by the environment"""
         self.body.set_state(PhysAgent.ACTIVE)
-        
-    
+
     def __planner(self):
         """ A private method that calculates the walk actions to rescue the
         victims. Further actions may be necessary and should be added in the
@@ -53,7 +51,7 @@ class Rescuer(AbstractAgent):
         self.plan.append((-1,-1))
         self.plan.append((-1,1))
         self.plan.append((1,1))
-        
+
     def deliberate(self) -> bool:
         """ This is the choice of the next action. The simulator calls this
         method at each reasonning cycle if the agent is ACTIVE.
@@ -79,4 +77,3 @@ class Rescuer(AbstractAgent):
                 res = self.body.first_aid(seq) # True when rescued             
 
         return True
-
