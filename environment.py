@@ -45,8 +45,8 @@ class Env:
         self.sum_gravity = 0   # sum of all gravity values for peg and psg calculation
         self.signals = []      # positional: the vital signals of the victims [[i,s1,...,s5,g,l],...]
         self.found   = [[]]    # positional: Physical agents that found each victim [[ag1] [ag2, ag3], ...] ag1 found vict 0, ag2 and 3, vict 1, ... 
-        self.saved   = [[]]    # positional: Physical agents that saved each victim 
-        
+        self.saved   = [[]]    # positional: Physical agents that saved each victim
+
         # Read the environment config file
         self.__read_config()
         # print(self.dic)
@@ -66,7 +66,7 @@ class Env:
         # Read and put the victims into the grid
 
         victims_file = os.path.join(self.data_folder,"env_victims.txt")
-        
+
         with open(victims_file, 'r') as csvfile:
             csvreader = csv.reader(csvfile)
             for row in csvreader:
@@ -78,7 +78,7 @@ class Env:
 
         # Load the vital signals of the victims
         vs_file = os.path.join(self.data_folder,"sinais_vitais.txt")
-        
+
         with open(vs_file, 'r') as csvfile:
             csvreader = csv.reader(csvfile)
             for row in csvreader:
@@ -91,7 +91,7 @@ class Env:
             print("from env: number of victims of env_victims.txt greater than vital signals")
             print("from env: end of execution")
             exit()
-            
+
         if self.nb_of_victims < len(self.signals):
             print("from env: nb of victims of env_victims.txt less than vital signals")
             print("from env: Assuming nb of victims of env_victims.txt")
@@ -99,12 +99,10 @@ class Env:
         # Set up found and saved victims' lists 
         self.found = [[] for v in range(self.nb_of_victims)]
         self.saved = [[] for v in range(self.nb_of_victims)]
-                
+
         # Set up with the trace color of the last physical agent who visited the cell
         self.visited = [[(0,0,0) for y in range(self.dic["GRID_HEIGHT"])] for x in range(self.dic["GRID_WIDTH"])]
-        
 
-    
     def __read_config(self):
         """ Read the size of the grid and window and loads into a dictionary """   
         # Open config file
@@ -129,7 +127,6 @@ class Env:
 
                 self.dic[keyword] = value               
 
-    
     def add_agent(self, mind, state=PhysAgent.ACTIVE):
         """ This public method adds an agent to the simulator.
         It connects the mind to the body (PhysAgent)
@@ -193,8 +190,7 @@ class Env:
 
         # Update the display
         pygame.display.update()
-        
-                
+
     def run(self):
         """ This public method is the engine of the simulator. It calls the deliberate
         method of each ACTIVE agent situated in the environment. Then, it updates the state
@@ -210,23 +206,23 @@ class Env:
 
         # Draw the environment with items
         self.__draw()
-        
+
         # Create the main loop
         running = True
 
         while running:
             # Handle events
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:                  
+                if event.type == pygame.QUIT:
                     running = False
-                    
+
             # control whether or not there are active or idle agents
             active_or_idle = False
 
             # ask each agent to deliberate the next action
             for body in self.agents:
 
-                # Asks the agent to choose and to do the next action if it is ACTIVE               
+                # Asks the agent to choose and to do the next action if it is ACTIVE
                 if body.state == PhysAgent.ACTIVE:
                     active_or_idle = True
                     more_actions_to_do = body.mind.deliberate()
@@ -249,7 +245,7 @@ class Env:
             # Update the grid after the delay
             if self.dic["DELAY"] > 0:
                 time.sleep(self.dic["DELAY"])
-                
+
             self.__draw()
 
             # Show metrics
@@ -259,7 +255,6 @@ class Env:
                 print("\n--------------")
                 input("from env: Tecle qualquer coisa para encerrar >>")
                 running = False
-   
 
         # Quit Pygame
         pygame.quit()
@@ -313,7 +308,7 @@ class Env:
         print(f"Stable victims     (V4) = {self.severity.count(4):3d}")
         print("--------------------------------------")
         print(f"Total of victims   (V)  = {self.nb_of_victims:3d}")
-              
+
         print("\n\n*** Final results per agent ***")
         for body in self.agents:
             print(f"\n[ Agent {body.mind.NAME} ]")
@@ -323,7 +318,7 @@ class Env:
             # Remaining time
             print("\n*** Used time ***")
             print(f"{body.mind.TLIM - body.rtime} of {body.mind.TLIM}")
-        
+
             # Found victims
             found = body.get_found_victims()
             self.__print_victims(found, "found","e")
@@ -331,7 +326,3 @@ class Env:
             # Saved victims
             saved = body.get_saved_victims()
             self.__print_victims(saved, "saved","s")
- 
-            
-
-
