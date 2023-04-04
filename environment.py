@@ -27,7 +27,8 @@ class Env:
     # Victim color by injury severity - from the most severe to the least
     VICTIM_COLOR = [(255,51,51), (255,128,0), (255,255,51), (128,255,0)]
 
-    # Index to the gravidade in sinais_vitais.txt (position)
+    # Index to the gravity value and label in sinais_vitais.txt (position)
+    IDX_GRAVITY = 6
     IDX_SEVERITY = 7
 
     def __init__(self, data_folder):
@@ -39,7 +40,9 @@ class Env:
                                # explorer agent cannot access this attribute, it has to find!
         self.nb_of_victims = 0 # total number of victims
         self.victims = []      # positional: the coordinates of the victims [(x1,y1), ..., (xn, yn)]
-        self.severity = []     # positional: the injury severity for each victim
+        self.severity = []     # positional: the injury severity for each victim (label)
+        self.gravity = []      # positional: the injury gravity for each victim (float value)
+        self.sum_gravity = 0   # sum of all gravity values for peg and psg calculation
         self.signals = []      # positional: the vital signals of the victims [[i,s1,...,s5,g,l],...]
         self.found   = [[]]    # positional: Physical agents that found each victim [[ag1] [ag2, ag3], ...] ag1 found vict 0, ag2 and 3, vict 1, ... 
         self.saved   = [[]]    # positional: Physical agents that saved each victim 
@@ -81,6 +84,8 @@ class Env:
             for row in csvreader:
                 self.signals.append(row)
                 self.severity.append(int(row[Env.IDX_SEVERITY]))
+                self.gravity.append(float(row[Env.IDX_GRAVITY]))
+                self.sum_gravity = self.sum_gravity + float(row[Env.IDX_GRAVITY])
 
         if self.nb_of_victims > len(self.signals):
             print("from env: number of victims of env_victims.txt greater than vital signals")
@@ -267,12 +272,16 @@ class Env:
 
 
         if len(victims) > 0:
-            print(f"\nList of {type_str} victims followed by the corresponding severity (gravidade)")
+            print(f"\nList of {type_str} victims followed by the corresponding severity label and gravity")
             print(victims)
             
             sev = []
+            grav = []
+            tot_grav = 0        # for peg or psg calculation
             for v in victims:
                 sev.append(self.severity[v])
+                grav.append(self.gravity[v])
+                tot_grav = tot_grav + self.gravity[v]
                 
             print(sev)
 
@@ -285,9 +294,12 @@ class Env:
             print(f"Total of {type_str} victims     (V{sub})  = {len(sev):3d} ({100*float(len(sev)/self.nb_of_victims):.2f}%)")
 
             weighted = ((6*sev.count(1) + 3*sev.count(2) + 2*sev.count(3) + sev.count(4))/
-            (6*self.severity.count(1)+3*self.severity.count(2)+2*self.severity.count(3)+self.severity.count(1)))
+            (6*self.severity.count(1)+3*self.severity.count(2)+2*self.severity.count(3)+self.severity.count(4)))
 
-            print(f"Weighted {type_str} victims per severity (V{sub}g) = {weighted:.2f}")
+            print(f"Weighted {type_str} victims per severity (V{sub}g) = {weighted:.2f}\n")
+            
+            print(f"Sum of gravities of all {type_str} victims = {tot_grav:.2f} of a total of {self.sum_gravity:.2f}")
+            print(f"  % of gravities of all {type_str} victims = {tot_grav/self.sum_gravity:.2f}")
 
     def print_results(self):
         """ For each agent, print found victims and saved victims by severity
