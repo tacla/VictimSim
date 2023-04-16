@@ -4,8 +4,9 @@ import os
 
 ## importa classes
 from environment import Env
-from explorer import Explorer
-from rescuer import Rescuer
+
+from agentes.explorador.explorer import Explorer
+from agentes.resgate.rescuer import Rescuer
 
 def main(data_folder_name):
     # Set the path to config files and data files for the environment

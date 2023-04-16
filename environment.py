@@ -7,7 +7,7 @@ import pygame
 import random
 import csv
 import time
-from explorer import Explorer
+from agentes.explorador.explorer import Explorer
 from physical_agent import PhysAgent
 
 
