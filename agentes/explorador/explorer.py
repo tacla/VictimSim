@@ -61,7 +61,9 @@ class Explorer(AbstractAgent):
         self.plano_aleatorio.passos_anteriores.append(passo_atual)
 
         # Movimenta o explorador para outra posição
-        result = self.body.walk(passo_atual['linha'], passo_atual['coluna'])
+        # passo_atual['coluna'] == dx
+        # passo_atual['linha'] == dy
+        result = self.body.walk(passo_atual['coluna'], passo_atual['linha'])
 
         self.__atualiza_tempo_restante(passo_atual)
 
