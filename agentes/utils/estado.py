@@ -14,5 +14,13 @@ class Estado:
         self.linha = linha
         self.coluna = coluna
 
+    def get_chave_posicao(self):
+        """Retorna a posição que o estado representa, no formato das chaves dos dicionários.
+
+        Returns:
+            str: chave da posicao que este estado representa.
+        """
+        return str(self.linha)+':'+str(self.coluna)
+
     def __str__(self) -> str:
         return f"({self.linha}, {self.coluna})"

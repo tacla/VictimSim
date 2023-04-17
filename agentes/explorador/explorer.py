@@ -29,6 +29,9 @@ class Explorer(AbstractAgent):
         self.resc: Rescuer = resc # Referência ao agente de resgate
         self.rtime: float = self.TLIM # Tempo restante para explorar
 
+        # Indica se o explorador deve continuar ou parar a exploração
+        self.flag_exploracao_ativa = True
+
         # Instancia o plano de exploração às cegas
         self.plano_aleatorio = PlanoAleatorio()
         # Instancia o plano de retorno à base (A*)
@@ -39,23 +42,31 @@ class Explorer(AbstractAgent):
         method at each cycle. Must be implemented in every agent"""
         # Indica o que tem na posição atual do explorador
         condicao_posicao_atual: str = ''
-        # Indica se o explorador deve continuar ou parar a exploração
-        flag_exploracao_ativa = True
         # Indica se a vítima já teve seus sinais vitais lidos ou não
         flag_nova_vitima = False
         # Indica se o explorador trocou de posição
         explorador_movimentou: bool = True
 
-        if self.plano_retorno_base.verifica_retorno_base():
-            flag_exploracao_ativa = False
+        self.plano_retorno_base.set_estado_atual(self.plano_aleatorio.estado_atual)
+        self.plano_retorno_base.set_problema_atual(self.plano_aleatorio.problema)
 
-        if self.rtime < 10.0:
+        if (self.flag_exploracao_ativa and self.plano_retorno_base.verifica_retorno_base(
+                self.rtime,
+                self.plano_aleatorio.estado_atual.get_chave_posicao()
+            )
+        ):
+            self.flag_exploracao_ativa = False
+
+        if (
+            self.plano_retorno_base.estado_atual.get_chave_posicao() == '0:0'
+            and not self.flag_exploracao_ativa
+        ):
             # time to wake up the rescuer and pass the walls and the victims (here, they're empty)
             print(f"{self.NAME} I believe I've remaining time of {self.rtime:.1f}")
             self.resc.go_save_victims([],[])
             return False
 
-        if flag_exploracao_ativa:
+        if self.flag_exploracao_ativa:
             # Escolhe o próximo passo a ser realizado
             passo_atual = self.plano_aleatorio.escolhe_variacao_posicao()
             # Adiciona o passo_atual ao histórico de passos realizados
@@ -82,12 +93,12 @@ class Explorer(AbstractAgent):
             if id_vitima >= 0:
                 condicao_posicao_atual = 'v'
 
-        # Não encontrou vítima, nem parede ou limite, portanto a posição atual está vazia
-        if condicao_posicao_atual == '':
-            condicao_posicao_atual = 'e'
-
         # Verifica se houve movimentação, atualiza as crenças do agente explorador
-        if flag_exploracao_ativa:
+        if self.flag_exploracao_ativa:
+            # Não encontrou vítima, nem parede ou limite, portanto a posição atual está vazia
+            if condicao_posicao_atual == '':
+                condicao_posicao_atual = 'e'
+
             if explorador_movimentou:
                 # Veriica se a vítima é inédita
                 if (
@@ -113,6 +124,9 @@ class Explorer(AbstractAgent):
                     passo_atual,
                     condicao_posicao_atual
                 )
+        else:
+            if explorador_movimentou:
+                self.plano_retorno_base.atualiza_estado_atual(passo_atual)
 
         return True
 
