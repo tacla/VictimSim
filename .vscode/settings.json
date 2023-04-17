@@ -1,0 +1,7 @@
+{
+    "python.analysis.extraPaths": [
+        ".\\agentes\\resgate'\\",
+        ".\\agentes\\explorador'\\",
+        ".\\agentes\\explorador'\\planos\\"
+    ]
+}
