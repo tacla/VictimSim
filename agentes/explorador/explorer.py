@@ -31,39 +31,43 @@ class Explorer(AbstractAgent):
 
         # Instancia o plano de exploração às cegas
         self.plano_aleatorio = PlanoAleatorio()
-
-        # TODO: IMPLEMENTAR O PLANO DE RETORNO PARA A BASE
+        # Instancia o plano de retorno à base (A*)
         self.plano_retorno_base = PlanoRetornoBase()
 
     def deliberate(self) -> bool:
         """ The agent chooses the next action. The simulator calls this
         method at each cycle. Must be implemented in every agent"""
-
-        # Indicar o que tem na posição atual do explorador
+        # Indica o que tem na posição atual do explorador
         condicao_posicao_atual: str = ''
-
-        # Indicar se o explorador trocou de posição
+        # Indica se o explorador deve continuar ou parar a exploração
+        flag_exploracao_ativa = True
+        # Indica se a vítima já teve seus sinais vitais lidos ou não
+        flag_nova_vitima = False
+        # Indica se o explorador trocou de posição
         explorador_movimentou: bool = True
 
-        # TODO: função pra ver se o agente volta pra base considerando o tempo restante e dist.
+        if self.plano_retorno_base.verifica_retorno_base():
+            flag_exploracao_ativa = False
+
         if self.rtime < 10.0:
-        # if self.plano_retorno_base.verifica_retorno_base():
             # time to wake up the rescuer and pass the walls and the victims (here, they're empty)
             print(f"{self.NAME} I believe I've remaining time of {self.rtime:.1f}")
             self.resc.go_save_victims([],[])
-
             return False
 
-        # Escolhe o próximo passo a ser realizado
-        passo_atual = self.plano_aleatorio.escolhe_variacao_posicao()
-
-        # Adiciona o passo_atual ao histórico de passos realizados
-        self.plano_aleatorio.passos_anteriores.append(passo_atual)
+        if flag_exploracao_ativa:
+            # Escolhe o próximo passo a ser realizado
+            passo_atual = self.plano_aleatorio.escolhe_variacao_posicao()
+            # Adiciona o passo_atual ao histórico de passos realizados
+            self.plano_aleatorio.passos_anteriores.append(passo_atual)
+        else:
+            passo_atual = self.plano_retorno_base.escolhe_variacao_posicao()
 
         # Movimenta o explorador para outra posição
-        # passo_atual['coluna'] == dx
-        # passo_atual['linha'] == dy
-        result = self.body.walk(passo_atual['coluna'], passo_atual['linha'])
+        result = self.body.walk(
+            passo_atual['coluna'], # passo_atual['coluna'] == dx
+            passo_atual['linha'] # passo_atual['linha'] == dy
+        )
 
         self.__atualiza_tempo_restante(passo_atual)
 
@@ -71,17 +75,11 @@ class Explorer(AbstractAgent):
         if result == PhysAgent.BUMPED:
             condicao_posicao_atual = 'w'
             explorador_movimentou = False
-            # walls = 1  # build the map- to do
-            # print(self.name() + ": wall or grid limit reached")
 
         if result == PhysAgent.EXECUTED:
             # Verifica se tem vítimas retornando o número sequencial (>=0) da mesma
-            seq = self.body.check_for_victim()
-            if seq >= 0:
-                _ = self.body.read_vital_signals(seq)
-                self.rtime -= self.COST_READ
-                # print("exp: read vital signals of " + str(seq))
-                # print(sinais_vitais)
+            id_vitima = self.body.check_for_victim()
+            if id_vitima >= 0:
                 condicao_posicao_atual = 'v'
 
         # Não encontrou vítima, nem parede ou limite, portanto a posição atual está vazia
@@ -89,14 +87,32 @@ class Explorer(AbstractAgent):
             condicao_posicao_atual = 'e'
 
         # Verifica se houve movimentação, atualiza as crenças do agente explorador
-        if explorador_movimentou:
-            self.plano_aleatorio.atualiza_estado_atual(passo_atual)
-            self.plano_aleatorio.adiciona_posicao_mapa(condicao_posicao_atual)
-        else:
-            self.plano_aleatorio.adiciona_parede_ou_limite_mapa(
-                passo_atual,
-                condicao_posicao_atual
-            )
+        if flag_exploracao_ativa:
+            if explorador_movimentou:
+                # Veriica se a vítima é inédita
+                if (
+                    condicao_posicao_atual == 'v'
+                    and self.plano_aleatorio.eh_nova_vitima(passo_atual)
+                ):
+                    flag_nova_vitima = True
+
+                self.plano_aleatorio.atualiza_estado_atual(passo_atual)
+                self.plano_aleatorio.adiciona_posicao_mapa(condicao_posicao_atual)
+
+                # Leitura dos sinais vitais da nova vítima
+                if flag_nova_vitima:
+                    sinais_vitais = self.body.read_vital_signals(id_vitima)
+                    # Aplica o custo de leitura dos sinais vitais no tempo
+                    self.rtime -= self.COST_READ
+
+                    print("exp: read vital signals of " + str(id_vitima))
+                    print(sinais_vitais)
+                    self.plano_aleatorio.adiciona_sinais_vitais_vitima(sinais_vitais)
+            else:
+                self.plano_aleatorio.adiciona_parede_ou_limite_mapa(
+                    passo_atual,
+                    condicao_posicao_atual
+                )
 
         return True
 

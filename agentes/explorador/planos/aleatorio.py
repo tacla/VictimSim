@@ -57,8 +57,7 @@ class PlanoAleatorio():
             direcao_escolhida = choice(direcoes_nao_visitadas)
         # Caso não tenha posição não visitada, escolhe qualquer uma entre todas
         else:
-            # TODO: melhorar a escolha, evitar que ele escolha uma parede
-            direcao_escolhida = choice(list(self.direcoes_possiveis.keys()))
+            direcao_escolhida = self.__escolhe_direcao_possivel_todas_escolhidas()
 
         # Retorna o passo escolhido para executar a movimentação
         return self.direcoes_possiveis[direcao_escolhida]
@@ -93,6 +92,23 @@ class PlanoAleatorio():
             return True
         return False
 
+    def __escolhe_direcao_possivel_todas_escolhidas(self) -> str:
+        """Escolhe uma direção entre as direções possíveis quando
+            todas as direções já foram exploradas.
+
+        - Evita paredes;
+        - Busca nas posições adjacentes próximas qual a direção com a posição
+            que possui uma direção que leva a uma posição ainda não visitada.
+
+        Returns:
+            str: direção escolhida (chave do dicionário direcoes_possiveis).
+        """
+        # TODO: evitar paredes
+        # TODO: busca nas posições adjacentes...
+
+        lista_keys_direcoes_possiveis = list(self.direcoes_possiveis.keys())
+        return choice(lista_keys_direcoes_possiveis)
+
     def atualiza_estado_atual(self, passo_realizado: Estado):
         """Atualiza o estado atual do explorador para ele mesmo em seu plano.
 
@@ -110,7 +126,11 @@ class PlanoAleatorio():
             condicao (str): conteúdo da posição visitada pelo agente.
         """
         if self.__verifica_estado_inedito(self.estado_atual):
-            self.problema.atualiza_crenca_posicao_ambiente(self.passo_realizado, self.estado_atual, condicao)
+            self.problema.atualiza_crenca_posicao_ambiente(
+                self.passo_realizado,
+                self.estado_atual,
+                condicao
+            )
 
     def adiciona_parede_ou_limite_mapa(
         self,
@@ -126,4 +146,33 @@ class PlanoAleatorio():
         # Obtêm o objeto Estado para o estado bloqueado
         estado_bloqueado = self.__calcula_proximo_estado(passo_utilizado)
         if self.__verifica_estado_inedito(estado_bloqueado):
-            self.problema.atualiza_crenca_posicao_ambiente(passo_utilizado, estado_bloqueado, condicao)
+            self.problema.atualiza_crenca_posicao_ambiente(
+                passo_utilizado,
+                estado_bloqueado,
+                condicao
+            )
+
+    def eh_nova_vitima(self, passo_utilizado: dict[str, int]) -> bool:
+        """Retorna um booleano indicando se a vítima encontrada é uma nova vítima.
+
+        Args:
+            passo_utilizado (dict[str, int]): passo utilizado para achar a nova posição.
+
+        Returns:
+            bool: True se é uma nova vítima, False caso contrário.
+        """
+        pos_linha = str(self.estado_atual.linha + passo_utilizado['linha'])
+        pos_coluna = str(self.estado_atual.coluna + passo_utilizado['coluna'])
+        chave_posicao = pos_linha + ':' + pos_coluna
+
+        return self.problema.chave_posicao_vitima_ausente(chave_posicao)
+
+
+    def adiciona_sinais_vitais_vitima(self, sinais_vitais: list) -> None:
+        """Inclui a chave da posição e os sinais vitais da vítima no problema. 
+
+        Args:
+            sinais_vitais (list): vetor que identifica a vítima e seus sinais vitais.
+        """
+        posicao_chave = str(self.estado_atual.linha) + ':' + str(self.estado_atual.coluna)
+        self.problema.set_sinais_vitais_vitima(posicao_chave, sinais_vitais)

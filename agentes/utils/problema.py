@@ -17,6 +17,7 @@ class Problema:
 
         # Crenças do ambiente: {linha: {coluna: 'descricao'}}
         self.crencas_ambiente: dict[int, dict[int, int]] = {0: {0: 'b'}}
+        # Grafo posições: {'linha:coluna': [lista_adjacencia]}
         self.crenca_grafo: dict[str, list[str]] = {'0:0': []}
 
         # Sinais vitais das vítimas: {id_vitima: [s.i, i.n, a.i, s.v, i.t, a.i, s]}
@@ -149,10 +150,24 @@ class Problema:
         """
         return self.crencas_ambiente[posicao.linha][posicao.coluna] == 'vitima'
 
-    def set_sinais_vitais_vitima(self, sinais_vitais: list):
-        """Salva os sinais vitais da vítima de acordo com o seu número identificador.
+    def set_sinais_vitais_vitima(self, chave_posicao: str, sinais_vitais: list):
+        """Salva os sinais vitais da vítima de acordo com a sua posição no ambiente.
 
         Args:
+            chave_posicao (str): chave da posição da vítima.
             sinais_vitais (list): sinais vitais da vítima.
         """
-        self.sinais_vitais_vitimas[sinais_vitais[0]] = sinais_vitais
+        if self.chave_posicao_vitima_ausente(chave_posicao):
+            self.sinais_vitais_vitimas[chave_posicao] = sinais_vitais
+        print(self.sinais_vitais_vitimas)
+
+    def chave_posicao_vitima_ausente(self, chave_posicao: str) -> bool:
+        """Verifica se a chave da posição passada está presente na chave do
+            dicionário dos sinais vitais.
+
+        Args:
+            chave_posicao (str): chave da posição da vítima.
+        Returns:
+            bool: True se a chave não está presente, False caso contrário.
+        """
+        return chave_posicao not in self.sinais_vitais_vitimas
