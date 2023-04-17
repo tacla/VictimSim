@@ -16,7 +16,8 @@ class Problema:
         self.tamanho_max_colunas = 1
 
         # Crenças do ambiente: {linha: {coluna: 'descricao'}}
-        self.crencas_ambiente: dict[int, dict[int, int]] = {0: {0: 'base'}}
+        self.crencas_ambiente: dict[int, dict[int, int]] = {0: {0: 'b'}}
+        self.crenca_grafo: dict[str, list[str]] = {'0:0': []}
 
         # Sinais vitais das vítimas: {id_vitima: [s.i, i.n, a.i, s.v, i.t, a.i, s]}
         self.sinais_vitais_vitimas: dict[int, list[float]] = {}
@@ -49,17 +50,74 @@ class Problema:
         """
         self.crencas_ambiente = crencas
 
-    def atualiza_crenca_posicao_ambiente(self, posicao: Estado, descricao: str) -> None:
+    def atualiza_crenca_posicao_ambiente(
+            self,
+            passo: dict[str, int],
+            posicao: Estado,
+            descricao: str
+        ) -> None:
         """Atualiza a crença de uma posição do ambiente com o que foi encontrado nela.
 
         Args:
             posicao (Estado): ojbeto Estado que identifica a posição.
             descricao (str): descrição do que foi encontrado na posição.
         """
+        if descricao != 'w':
+            chave = str(posicao.linha)+':'+str(posicao.coluna)
+            if chave not in self.crenca_grafo:
+                self.crenca_grafo[chave] = []
+
+            posicao_anterior = Estado()
+            posicao_anterior.linha = posicao.linha - passo['linha']
+            posicao_anterior.coluna = posicao.coluna - passo['coluna']
+
+            chave_anterior = str(posicao_anterior.linha)+':'+str(posicao_anterior.coluna)
+            self.crenca_grafo[chave_anterior].append(chave)
+            self.crenca_grafo[chave].append(chave_anterior)
+
+            for chave, adj_chave in self.crenca_grafo.items():
+                str_pos_chave = chave.split(':')
+                for aux_chave in self.crenca_grafo:
+                    if aux_chave == chave:
+                        continue
+                    if aux_chave in adj_chave:
+                        continue
+                    if aux_chave in self.obtem_adjacencias(str_pos_chave):
+                        self.crenca_grafo[chave].append(aux_chave)
+            print(posicao_anterior)
+            print(posicao)
+            print(self.crenca_grafo)
+
         if posicao.linha not in self.crencas_ambiente:
             self.crencas_ambiente[posicao.linha] = {}
 
         self.crencas_ambiente[posicao.linha][posicao.coluna] = descricao
+        print(self.crencas_ambiente)
+
+    def obtem_adjacencias(self, posicao: list) -> list[str]:
+        """Retorna uma lista de strings onde cada item é a
+            chave de uma posição adjacente.
+
+        Args:
+            posicao (list): posição que se deseja descobrir as adjacências.
+
+        Returns:
+            list[str]: lista com as chaves das posições adjacentes.
+        """
+        lista_adjacencias = []
+        linha = int(posicao[0])
+        coluna = int(posicao[1])
+
+        lista_adjacencias.append(f"{str(linha - 1)}:{str(coluna - 1)}") # (-1, -1)
+        lista_adjacencias.append(f"{str(linha - 1)}:{str(coluna)}") # (-1, 0)
+        lista_adjacencias.append(f"{str(linha - 1)}:{str(coluna + 1)}") # (-1, 1)
+        lista_adjacencias.append(f"{str(linha)}:{str(coluna - 1)}") # (0, -1)
+        lista_adjacencias.append(f"{str(linha)}:{str(coluna + 1)}") # (0, 1)
+        lista_adjacencias.append(f"{str(linha + 1)}:{str(coluna - 1)}") # (1, -1)
+        lista_adjacencias.append(f"{str(linha + 1)}:{str(coluna)}") # (1, 0)
+        lista_adjacencias.append(f"{str(linha + 1)}:{str(coluna + 1)}") # (1, 1)
+
+        return lista_adjacencias
 
     def get_custo_acao(self, descricao_action: str) -> float:
         """Retorna o custo de determinada ação.

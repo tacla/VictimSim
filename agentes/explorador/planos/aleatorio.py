@@ -22,6 +22,7 @@ class PlanoAleatorio():
         # Estados relacionados ao plano (inicial e atual)
         self.estado_inicial = estado_inicial
         self.estado_atual = estado_atual
+        self.passo_realizado = {'linha': 0, 'coluna': 0}
 
         # Variávies associadas ao plano
         self.passos_anteriores: list[Estado] = []
@@ -44,7 +45,11 @@ class PlanoAleatorio():
         """
         # Lista com as direções que a partir da posição atual resultam em posições não visitadas
         direcoes_nao_visitadas = [
-            direcao for direcao, passo_direcao in self.direcoes_possiveis.items() if (self.__verifica_estado_inedito(self.__calcula_proximo_estado(passo_direcao)))
+            direcao for direcao, passo_direcao in self.direcoes_possiveis.items()
+            if (self.__verifica_estado_inedito(
+                self.__calcula_proximo_estado(passo_direcao)
+                )
+            )
         ]
 
         # Escolhe entre as direções que resultam em posições que ainda não foram visitadas
@@ -94,8 +99,9 @@ class PlanoAleatorio():
         Args:
             passo_realizado (dict[str, int]): variação da posição para linha e coluna.
         """
-        self.estado_atual.linha += passo_realizado['linha']
-        self.estado_atual.coluna += passo_realizado['coluna']
+        self.passo_realizado = passo_realizado
+        self.estado_atual.linha += self.passo_realizado['linha']
+        self.estado_atual.coluna += self.passo_realizado['coluna']
 
     def adiciona_posicao_mapa(self, condicao: str) -> None:
         """Inclui uma posição e seu conteúdo nas crenças do ambiente para o agente.
@@ -104,9 +110,7 @@ class PlanoAleatorio():
             condicao (str): conteúdo da posição visitada pelo agente.
         """
         if self.__verifica_estado_inedito(self.estado_atual):
-            self.problema.atualiza_crenca_posicao_ambiente(self.estado_atual, condicao)
-
-        print(self.problema.crencas_ambiente)
+            self.problema.atualiza_crenca_posicao_ambiente(self.passo_realizado, self.estado_atual, condicao)
 
     def adiciona_parede_ou_limite_mapa(
         self,
@@ -122,6 +126,4 @@ class PlanoAleatorio():
         # Obtêm o objeto Estado para o estado bloqueado
         estado_bloqueado = self.__calcula_proximo_estado(passo_utilizado)
         if self.__verifica_estado_inedito(estado_bloqueado):
-            self.problema.atualiza_crenca_posicao_ambiente(estado_bloqueado, condicao)
-
-        print(self.problema.crencas_ambiente)
+            self.problema.atualiza_crenca_posicao_ambiente(passo_utilizado, estado_bloqueado, condicao)
