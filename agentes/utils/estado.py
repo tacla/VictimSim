@@ -13,3 +13,6 @@ class Estado:
         """
         self.linha = linha
         self.coluna = coluna
+
+    def __str__(self) -> str:
+        return f"({self.linha}, {self.coluna})"
