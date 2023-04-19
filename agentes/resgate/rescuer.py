@@ -2,6 +2,8 @@
 ### @Author: Tacla (UTFPR)
 ### Demo of use of VictimSim
 """
+from agentes.utils.problema import Problema
+from agentes.utils.estado import Estado
 
 from abstract_agent import AbstractAgent
 from physical_agent import PhysAgent
@@ -25,14 +27,20 @@ class Rescuer(AbstractAgent):
         # It changes to ACTIVE when the map arrives
         self.body.set_state(PhysAgent.IDLE)
 
+        self.problema: Problema = None
+
         # planning
         self.__planner()
 
-    def go_save_victims(self, walls, victims):
+    def go_save_victims(self, problema_montado: Problema):
         """ The explorer sends the map containing the walls and
         victims' location. The rescuer becomes ACTIVE. From now,
-        the deliberate method is called by the environment"""
+        the deliberate method is called by the environment
+        
+        Args: 
+            problema (Problema): problema contendo as informações do mapa e vítimas."""
         self.body.set_state(PhysAgent.ACTIVE)
+        self.problema = problema_montado
 
     def __planner(self):
         """ A private method that calculates the walk actions to rescue the
@@ -60,8 +68,8 @@ class Rescuer(AbstractAgent):
         @return False: there's no more action to do """
 
         # No more actions to do
-        if self.plan == []:  # empty list, no more actions to do
-           return False
+        if not self.plan:  # empty list, no more actions to do
+            return False
 
         # Takes the first action of the plan (walk action) and removes it from the plan
         dx, dy = self.plan.pop(0)

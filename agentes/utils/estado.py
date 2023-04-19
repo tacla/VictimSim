@@ -20,7 +20,7 @@ class Estado:
         Returns:
             str: chave da posicao que este estado representa.
         """
-        return str(self.linha)+':'+str(self.coluna)
+        return str(self.linha) + ':' + str(self.coluna)
 
     def __str__(self) -> str:
         return f"({self.linha}, {self.coluna})"

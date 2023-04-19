@@ -1,6 +1,5 @@
 from queue import PriorityQueue
 from agentes.utils.problema import Problema
-from agentes.utils.estado import Estado
 
 class PlanoRetornoBase:
     """Representa o plano de retorno à base do agente explorador
@@ -10,21 +9,31 @@ class PlanoRetornoBase:
     def __init__(self) -> None:
         """Define o plano de retorno à base, é recalculado à toda iteração.
         """
-        self.estado_atual: Estado = Estado()
-        self.problema = None
-
         # Trajeto a ser feito de volta à base
         self.trajeto_base: dict[str, dict[str, int]] = {}
         self.ordem_trajeto: list[str] = []
 
-    def verifica_retorno_base(self, tempo_restante, chave_posicao) -> bool:
-        """Retorna se é necessário voltar para base pelo motivo de não ser possível
+    def verifica_retorno_base(
+            self,
+            problema: Problema,
+            chave_posicao_atual: str,
+            tempo_restante: float
+        ) -> bool:
+        """Se necessário, volta para base pelo motivo de não ser possível 
             retornar na próxima interação do agente com o ambiente.
+
+        Args:
+            problema (Problema): problema a ser resolvido com o plano de retorno.
+            chave_posicao_atual (str): chave que identifica a posição atual do agente.
+            tempo_restante (float): tempo restante para executar suas ações.
 
         Returns:
             bool: True se é necessário volta para base, False caso contrário.
         """
-        caminho_encontrado_atual = self.encontra_melhor_caminho_a_star(chave_posicao)
+        caminho_encontrado_atual = self.encontra_melhor_caminho_a_star(
+            problema.grafo_posicoes,
+            chave_posicao_atual
+        )
         if caminho_encontrado_atual:
             # Verifica se o tempo é suficiente para voltar com uma taxa de sobre de +2.0
             if abs(tempo_restante - caminho_encontrado_atual['0:0']['custo']) <= 1.5:
@@ -46,18 +55,9 @@ class PlanoRetornoBase:
 
         return {'linha': passo_linha, 'coluna': passo_coluna}
 
-    def atualiza_estado_atual(self, passo_realizado: Estado):
-        """Atualiza o estado atual do explorador para ele mesmo em seu plano.
-
-        Args:
-            passo_realizado (dict[str, int]): variação da posição para linha e coluna.
-        """
-        self.estado_atual.linha += passo_realizado['linha']
-        self.estado_atual.coluna += passo_realizado['coluna']
-
-
     def encontra_melhor_caminho_a_star(
             self,
+            grafo_posicoes: dict[str, list[str]],
             chave_posicao_inicial: str
         ) -> dict[str, dict[str, int]]:
         """Encontra o melhor caminho de menor custo por meio do gráfico gerado do problema
@@ -82,7 +82,7 @@ class PlanoRetornoBase:
             if posicao_atual == '0:0':
                 break
 
-            for proxima_posicao in self.problema.crenca_grafo[posicao_atual]:
+            for proxima_posicao in grafo_posicoes[posicao_atual]:
                 est_atual_linha, est_atual_coluna = map(int, posicao_atual.split(':'))
                 est_proximo_linha, est_proximo_coluna = map(int, proxima_posicao.split(':'))
                 custo = 0
@@ -125,19 +125,3 @@ class PlanoRetornoBase:
             posicao_atual = pos_anterior
 
         return caminho
-
-    def set_problema_atual(self, problema: Problema) -> None:
-        """Define o problema para o algoritmo do plano de retorno à base resolver.
-
-        Args:
-            problema (Problema): problema de busca a ser resolvido.
-        """
-        self.problema = problema
-
-    def set_estado_atual(self, estado: Estado) -> None:
-        """Define o problema para o algoritmo do plano de retorno à base resolver.
-
-        Args:
-            estado (Estado): estado atual para o plano se atualizar.
-        """
-        self.estado_atual = estado
