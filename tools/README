@@ -3,6 +3,7 @@ Description of tools
 These programs may need the following config files:
 - walls.txt: a list of walls' coordinates x,y (one per line)
 - victims.txt: a list of victims' coordinates x,y (one per line)
+- sinais_vitais.txt: the vital signals of the victims (one line per victim)
 
 edit_draw_2d_grid.py: read the walls.txt file and victims.txt file and allows the user to add/remove walls and add/remove victims.
 
