@@ -65,8 +65,8 @@ class Problema:
                         adjacencias_posicao.append(chave_pos_grafo)
 
             self.__adiciona_posicao_nas_crencas(posicao_atual, descricao)
-            print(f"{posicao_anterior} -> {posicao_atual}")
-            print(self.grafo_posicoes)
+            # print(f"{posicao_anterior} -> {posicao_atual}")
+            # print(self.grafo_posicoes)
         else:
             posicao_bloqueada = Estado(
                 (posicao_atual.linha + passo_usado['linha']),
@@ -79,7 +79,7 @@ class Problema:
             self.ambiente_crencas[posicao.linha] = {}
 
         self.ambiente_crencas[posicao.linha][posicao.coluna] = descricao
-        print(self.ambiente_crencas)
+        # print(self.ambiente_crencas)
 
     def obtem_adjacencias(self, posicao: list) -> list[str]:
         """Retorna uma lista de strings onde cada item é a
@@ -131,7 +131,7 @@ class Problema:
         """
         if self.verifica_vitima_inedita(chave_posicao):
             self.sinais_vitais_vitimas[chave_posicao] = sinais_vitais
-        print(self.sinais_vitais_vitimas)
+        # print(self.sinais_vitais_vitimas)
 
     def verifica_vitima_inedita(self, chave_posicao: str) -> bool:
         """Verifica se a chave da posição passada está presente na chave do

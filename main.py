@@ -38,5 +38,8 @@ if __name__ == '__main__':
         data_folder_name = sys.argv[1]
     else:
         data_folder_name = "data"
+        # data_folder_name = "data_treino1"
+        # data_folder_name = "TESTE 2"
+        # data_folder_name = "TESTE 3"
 
     main(data_folder_name)

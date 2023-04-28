@@ -5,6 +5,7 @@
 
 #PLANOS POSSÍVEIS PARA O AGENTE EXPLORADOR
 from agentes.explorador.planos.aleatorio import PlanoAleatorio
+from agentes.explorador.planos.exploracao_dfs import ExploracaoDFS
 from agentes.explorador.planos.retorno import PlanoRetornoBase
 
 # PROBLEMA A SER DESENVOLVIDO PELO AGENTE EXPLORADOR
@@ -44,8 +45,8 @@ class Explorer(AbstractAgent):
         self.problema: Problema = Problema()
 
         # Instancia o plano de exploração às cegas
-        self.plano_aleatorio = PlanoAleatorio()
-
+        # self.plano_aleatorio = PlanoAleatorio()
+        self.plano_aleatorio = ExploracaoDFS()
         # Instancia o plano de retorno à base (A*)
         self.plano_retorno_base = PlanoRetornoBase()
 
@@ -79,6 +80,10 @@ class Explorer(AbstractAgent):
                 self.problema,
                 self.estado_atual
             )
+            if type(passo_atual) == bool:
+                passo_atual = {'linha': 0, 'coluna': 0}
+                self.flag_exploracao_ativa = False
+
             # Adiciona o passo_atual ao histórico de passos realizados
             self.plano_aleatorio.passos_anteriores.append(passo_atual)
         else:
@@ -95,6 +100,7 @@ class Explorer(AbstractAgent):
         # Test the result of the walk action
         if result == PhysAgent.BUMPED:
             condicao_posicao_atual = 'w'
+            self.plano_aleatorio.unbacktracked.pop()
             explorador_movimentou = False
 
         if result == PhysAgent.EXECUTED:
@@ -129,7 +135,7 @@ class Explorer(AbstractAgent):
                     self.rtime -= self.COST_READ
 
                     print("exp: read vital signals of " + str(id_vitima))
-                    print(sinais_vitais)
+                    # print(sinais_vitais)
                     self.problema.set_sinais_vitais_vitima(
                         self.estado_atual.get_chave_posicao(),
                         sinais_vitais
