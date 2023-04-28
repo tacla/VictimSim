@@ -13,3 +13,5 @@ The rescuer.py and explorer.py, as provided in the packet, are examples of use o
 The Explorer walks randomly in the environment while the Rescuer has a stored plan. The execution is sequential. 
 When the explorer finishes the task of locating and reading the vital signals of victims, it calls the Rescuer agent to start
 the rescue task.
+
+The tools folder contains programs to generate new 2D environments from scratch or from existing ones.
