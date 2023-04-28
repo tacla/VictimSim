@@ -1,5 +1,5 @@
 # Author Tacla, UTFPR
-# Version 1  fev/2023
+# First version  fev/2023
 
 import sys
 import os
@@ -7,7 +7,7 @@ import pygame
 import random
 import csv
 import time
-from explorer import Explorer
+from abstract_agent import AbstractAgent
 from physical_agent import PhysAgent
 
 
@@ -82,10 +82,19 @@ class Env:
         with open(vs_file, 'r') as csvfile:
             csvreader = csv.reader(csvfile)
             for row in csvreader:
-                self.signals.append(row)
-                self.severity.append(int(row[Env.IDX_SEVERITY]))
-                self.gravity.append(float(row[Env.IDX_GRAVITY]))
-                self.sum_gravity = self.sum_gravity + float(row[Env.IDX_GRAVITY])
+                seq = int(row[0])  # seq number
+                sp = float(row[1]) # diastolic pression
+                dp = float(row[2]) # sistolic pression
+                qp = float(row[3]) # quality of pression
+                pf = float(row[4]) # pulse frequency
+                rf = float(row[5]) # respiratory frequency
+                gr = float(row[Env.IDX_GRAVITY]) # injury severity value
+                lb = int(row[Env.IDX_SEVERITY])  # label of the injury severity
+                
+                self.signals.append([seq, sp, dp, qp, pf, rf, gr, lb])
+                self.severity.append(lb)
+                self.gravity.append(gr)
+                self.sum_gravity = self.sum_gravity + gr
 
         if self.nb_of_victims > len(self.signals):
             print("from env: number of victims of env_victims.txt greater than vital signals")
@@ -286,10 +295,10 @@ class Env:
             print(sev)
 
             print("\n")
-            print(f"Critical victims {type_str}     (V{sub}1) = {sev.count(1):3d} ")
-            print(f"Instable victims {type_str}     (V{sub}2) = {sev.count(2):3d} ")
-            print(f"Pot. inst. victims {type_str}   (V{sub}3) = {sev.count(3):3d} ")
-            print(f"Stable victims {type_str}       (V{sub}4) = {sev.count(4):3d} ")
+            print(f"Critical victims {type_str}     (V{sub}1) = {sev.count(1):3d} out of {self.severity.count(1)} ({100*sev.count(1)/self.severity.count(1):.1f})%")
+            print(f"Instable victims {type_str}     (V{sub}2) = {sev.count(2):3d} out of {self.severity.count(2)} ({100*sev.count(2)/self.severity.count(2):.1f})%")
+            print(f"Pot. inst. victims {type_str}   (V{sub}3) = {sev.count(3):3d} out of {self.severity.count(3)} ({100*sev.count(3)/self.severity.count(3):.1f})%")
+            print(f"Stable victims {type_str}       (V{sub}4) = {sev.count(4):3d} out of {self.severity.count(4)} ({100*sev.count(4)/self.severity.count(4):.1f})%")
             print("--------------------------------------")
             print(f"Total of {type_str} victims     (V{sub})  = {len(sev):3d} ({100*float(len(sev)/self.nb_of_victims):.2f}%)")
 
