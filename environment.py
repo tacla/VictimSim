@@ -249,7 +249,7 @@ class Env:
                             print("from env: ag " + body.mind.NAME + " succesfully terminated, it is at the base")
                             body.set_state(PhysAgent.ENDED)
                         else:
-                            print("from env: ag " + body.mind.NAME + " lost its mind, not at the base, and asked for termination. Now, it's dead")
+                            print("from env: ag " + body.mind.NAME + " is not at the base and asked for termination. Now, it's dead")
                             body.set_state(PhysAgent.DEAD)
 
                 elif body.state == PhysAgent.IDLE:
@@ -281,9 +281,6 @@ class Env:
 
 
         if len(victims) > 0:
-            print(f"\nList of {type_str} victims followed by the corresponding severity label and gravity")
-            print(victims)
-            
             sev = []
             grav = []
             tot_grav = 0        # for peg or psg calculation
@@ -291,8 +288,11 @@ class Env:
                 sev.append(self.severity[v])
                 grav.append(self.gravity[v])
                 tot_grav = tot_grav + self.gravity[v]
-                
-            print(sev)
+
+
+            print(f"\n{type_str} victims: (id, severity, gravity)")
+            for i in range(len(victims)):
+                print(f"({victims[i]:d}, {sev[i]:d}, {grav[i]:.1f})", end=' ')
 
             print("\n")
             print(f"Critical victims {type_str}     (V{sub}1) = {sev.count(1):3d} out of {self.severity.count(1)} ({100*sev.count(1)/self.severity.count(1):.1f})%")
@@ -309,6 +309,8 @@ class Env:
             
             print(f"Sum of gravities of all {type_str} victims = {tot_grav:.2f} of a total of {self.sum_gravity:.2f}")
             print(f"  % of gravities of all {type_str} victims = {tot_grav/self.sum_gravity:.2f}")
+        else:
+            print(f"No {type_str} victims")
 
     def print_results(self):
         """ For each agent, print found victims and saved victims by severity
