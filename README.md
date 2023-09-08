@@ -6,6 +6,7 @@ VictimSim simulates catastrophic scenarios with a 2D grid environment where arti
 Some features of the simulator:
 - allows one or more agents, each agent has its own color configurable by the config files (in data folder)
 - detects colision of an agent with the walls and with the end of the grid (BUMPED perception)
+- detects obstacles and end of the grid in the neighborhood (one step)
 - more than one agent can occupy the same cell without colision
 - controls the scheduling of each agent by its state: ACTIVE, IDLE, TERMINATED or DEAD (only ACTIVE agents can execute actions)
 - controls the executing time allowed for each agent - once the time is expired, the agent dies.
