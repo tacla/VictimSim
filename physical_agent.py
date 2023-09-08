@@ -120,7 +120,7 @@ class PhysAgent:
 
             i += 1
 
-        print(f"({self.x},{self.y}): obstacles={obstacles}")
+        #print(f"({self.x},{self.y}): obstacles={obstacles}")
   
         return obstacles 
 
