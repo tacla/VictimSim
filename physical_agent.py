@@ -19,7 +19,11 @@ class PhysAgent:
     BUMPED = -1        # agent bumped into a wall or reached the end of the grid
     TIME_EXCEEDED = -2 # agent reached the time limit - no more battery
     EXECUTED = 1       # action successfully executed
-    
+
+    # Possible results for the check_obstacles method
+    CLEAR = 0
+    WALL = 1
+    END = 2
 
     def __init__(self, mind, env, x_base, y_base, state=ACTIVE):
         """Instatiates a physical agent
@@ -90,6 +94,36 @@ class PhysAgent:
             return PhysAgent.EXECUTED
         else:
             return PhysAgent.BUMPED
+
+    def check_obstacles(self):
+        """ Public method for checking obstacles in the neighborhood of the current position of the agent.
+        @returns a vector of eight integers indexed in a clockwise manner. The first position in the vector is
+        above the current position of the agent, the second is in the upper right diagonal direction, the third is to the right, and so on."        
+        Each vector position containg one of the following values: {CLEAR, WALL, END}
+        CLEAR means that there is no obstacle (value = 0)
+        WALL means that there is a wall (value = 1)
+        END means the end of the grid (value = 2)
+        """
+        
+        delta = [(0,-1),(1,-1),(1,0),(1,1),(0,1),(-1,1),(-1,0),(-1,-1)]
+        obstacles = [PhysAgent.CLEAR] * 8
+        i = 0
+
+        for d in delta:
+            new_x = self.x + d[0]
+            new_y = self.y + d[1]
+
+            if new_x < 0 or new_x >= self.env.dic["GRID_WIDTH"] or new_y < 0 or new_y >= self.env.dic["GRID_HEIGHT"]:
+                obstacles[i] = PhysAgent.END
+            elif self.env.walls[new_x][new_y] == 1:
+                obstacles[i] = PhysAgent.WALL
+
+            i += 1
+
+        print(f"({self.x},{self.y}): obstacles={obstacles}")
+  
+        return obstacles 
+
 
     def check_for_victim(self):
         """ Public method for testing if there is a victim in the current position of the agent

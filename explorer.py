@@ -45,6 +45,10 @@ class Explorer(AbstractAgent):
         else:
            dy = random.choice([-1, 0, 1])
         
+        # Check the neighborhood obstacles
+        obstacles = self.body.check_obstacles()
+
+
         # Moves the body to another position
         result = self.body.walk(dx, dy)
 
