@@ -89,15 +89,17 @@ class Explorer(AbstractAgent):
             print(f"{self.NAME} I believe I've remaining time of {self.rtime:.1f}")
             self.resc.go_save_victims([],[])
             return False
-        
-        mov = self.map.get_action()
-        
-        dy = mov[0]
-        dx = mov[1]
-        
+                
         # Check the neighborhood obstacles
         obstacles = self.body.check_obstacles()
-
+        
+        authorized = False
+        
+        while not authorized:
+            mov = self.map.get_action()
+            dy = mov[0]
+            dx = mov[1]
+            authorized = self.authorize(obstacles,dx,dy)
 
         # Moves the body to another position
         result = self.body.walk(dx, dy)
@@ -126,4 +128,32 @@ class Explorer(AbstractAgent):
                 # print(vs)
                 
         return True
+    
+    def authorize(self, obstacles, x, y):
+        if x == 0 and y == -1:
+            if obstacles[0] != 0:
+                return False
+        if x == 1 and y == -1:
+            if obstacles[1] != 0:
+                return False
+        if x == 1 and y == 0:
+            if obstacles[2] != 0:
+                return False
+        if x == 1 and y == 1:
+            if obstacles[3] != 0:
+                return False
+        if x == 0 and y == 1:
+            if obstacles[4] != 0:
+                return False
+        if x == -1 and y == 1:
+            if obstacles[5] != 0:
+                return False
+        if x == -1 and y == 0:
+            if obstacles[6] != 0:
+                return False
+        if x == -1 and y == -1:
+            if obstacles[7] != 0:
+                return False
+        return True
+            
 

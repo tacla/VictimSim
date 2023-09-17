@@ -18,7 +18,7 @@ def main(data_folder_name):
     # Instantiate the environment
     env = Env(data_folder)
     
-    # config files for the agents
+    # config files for the agen5ts
     rescuer_file = os.path.join(data_folder, "rescuer_config.txt")
     explorer_file = os.path.join(data_folder, "explorer_config.txt")
     
@@ -40,6 +40,6 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         data_folder_name = sys.argv[1]
     else:
-        data_folder_name = os.path.join("datasets", "data_12x12_10vic")
+        data_folder_name = os.path.join("datasets", "data_20x20_42vic")
         
     main(data_folder_name)
