@@ -1,12 +1,13 @@
 
 
 class Map:
-    def __init__(self):
+    def __init__(self, path_priorities):
         self.coord_x = 0 
         self.coord_y = 0
         self.coordinates_map = {'SE': [1,1], 'S': [1,0], 'SW': [1,-1], 'W': [0,-1], 'NW': [-1,-1], 'N': [-1,0], 'NE': [-1,1], 'E': [0,1]}
-        self.position = Position()
-        self.last_position = Position()
+        self.path_priorities = path_priorities
+        self.position = Position(self.path_priorities)
+        self.last_position = Position(self.path_priorities)
         self.last_action = ''
         self.backtracking = False
         self.map = {(0,0)}
@@ -52,7 +53,7 @@ class Map:
         self.coord_x = self.coord_x + dx
         self.coord_y = self.coord_y + dy
         if (self.coord_x,self.coord_y) not in self.map:
-            pos = Position()
+            pos = Position(self.path_priorities)
             pos.coord_x = self.coord_x
             pos.coord_y = self.coord_y
             self.map[(self.coord_x,self.coord_y)] = pos
@@ -70,16 +71,16 @@ class Map:
         return self.map
     
 class Position:
-    def __init__(self):
+    def __init__(self, path_priorities):
         self.coord_x = 0 
         self.coord_y = 0
         self.results = {'SE': None, 'S': None, 'SW': None, 'W': None, 'NW': None, 'N': None, 'NE': None, 'E': None}
-        self.untried = ['SE','S','SW','W','NW','N','NE','E']
+        self.untried = list(path_priorities)
         self.last_action = ''
         
     def pop_untried(self):
         if len(self.untried) != 0:
-            return self.untried.pop()
+            return self.untried.pop(0)
         else:
             return 
 

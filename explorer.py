@@ -12,7 +12,7 @@ from abc import ABC, abstractmethod
 
 
 class Explorer(AbstractAgent):
-    def __init__(self, env, config_file, resc):
+    def __init__(self, env, config_file, resc, path_priorities):
         """ Construtor do agente random on-line
         @param env referencia o ambiente
         @config_file: the absolute path to the explorer's config file
@@ -24,8 +24,11 @@ class Explorer(AbstractAgent):
         # Specific initialization for the rescuer
         self.resc = resc           # reference to the rescuer agent
         self.rtime = self.TLIM     # remaining time to explore   
-        
-        self.map = Map()  
+        self.horizontal = 0 #Incrementa se andar para a direita e decrementa se andar para a esquerda
+        self.vertical = 0  # Incrementa se andar para baixo e decrementa se andar para cima
+        self.number_of_moves = 0
+
+        self.map = Map(path_priorities)
 
    
     
@@ -83,13 +86,88 @@ class Explorer(AbstractAgent):
         method at each cycle. Must be implemented in every agent"""
 
         # No more actions, time almost ended
-        if self.rtime < 10.0: 
+        if self.rtime < 10.0:
+            pass
             # time to wake up the rescuer
             # pass the walls and the victims (here, they're empty)
-            print(f"{self.NAME} I believe I've remaining time of {self.rtime:.1f}")
-            self.resc.go_save_victims([],[])
-            return False
-                
+            # print(f"{self.NAME} I believe I've remaining time of {self.rtime:.1f}")
+            # self.resc.go_save_victims([],[])
+            # return False
+
+        if abs(self.horizontal) + abs(self.vertical) + self.number_of_moves/5 >= self.rtime:
+            # time to wake up the rescuer
+            # pass the walls and the victims (here, they're empty)
+            print(f"{self.NAME} Tentando voltar com {self.rtime:.1f}")
+            dx = 0
+            dy = 0
+            if self.horizontal < 0:
+                dx = 1
+            elif self.horizontal > 0:
+                dx = -1
+            if self.vertical < 0:
+                dy = 1
+            elif self.vertical > 0:
+                dy = -1
+
+            authorized = False
+            cont = 0
+            movx = dx
+            movy = dy
+            while not authorized:
+                authorized = self.authorize(self.body.check_obstacles(), movx, movy)
+                if not authorized:
+                    movy = random.choice([-1, 1, 0])
+                    movx = random.choice([-1, 1, 0])
+
+                # if not authorized and cont == 0:
+                #     movx = dx
+                #     movy = 0
+                #     cont += 1
+                # elif not authorized and cont == 1:
+                #     movx = -dx
+                #     movy = 0
+                #     cont += 1
+                # elif not authorized and cont == 2:
+                #     movx = 0
+                #     movy = dy
+                #     cont += 1
+                # elif not authorized and cont == 3:
+                #     movx = 0
+                #     movy = -dy
+                #     cont += 1
+
+            self.horizontal += movx
+            self.vertical += movy
+
+            # Moves the body to another position
+            result = self.body.walk(movx, movy)
+
+            # Update remaining time
+            if movx != 0 and movy != 0:
+                self.rtime -= self.COST_DIAG
+            else:
+                self.rtime -= self.COST_LINE
+
+            # Test the result of the walk action
+            if result == PhysAgent.BUMPED:
+                walls = 1  # build the map- to do
+                self.map.update_agent_position(0, 0)
+                # print(self.name() + ": wall or grid limit reached")
+
+            if result == PhysAgent.EXECUTED:
+                # check for victim returns -1 if there is no victim or the sequential
+                # the sequential number of a found victim
+                self.map.update_agent_position(dx, dy)
+                seq = self.body.check_for_victim()
+                if seq >= 0:
+                    vs = self.body.read_vital_signals(seq)
+                    self.rtime -= self.COST_READ
+                    # print("exp: read vital signals of " + str(seq))
+                    # print(vs)
+
+            #self.resc.go_save_victims([],[])
+            return True
+
         # Check the neighborhood obstacles
         obstacles = self.body.check_obstacles()
         
@@ -103,6 +181,9 @@ class Explorer(AbstractAgent):
 
         # Moves the body to another position
         result = self.body.walk(dx, dy)
+        self.horizontal += dx
+        self.vertical += dy
+        self.number_of_moves += 1
 
         # Update remaining time
         if dx != 0 and dy != 0:
