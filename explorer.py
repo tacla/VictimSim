@@ -11,6 +11,7 @@ from abc import ABC, abstractmethod
 
 
 class Explorer(AbstractAgent):
+
     def __init__(self, env, config_file, resc):
         """ Construtor do agente random on-line
         @param env referencia o ambiente
@@ -22,8 +23,15 @@ class Explorer(AbstractAgent):
         
         # Specific initialization for the rescuer
         self.resc = resc           # reference to the rescuer agent
-        self.rtime = self.TLIM     # remaining time to explore     
+        self.rtime = self.TLIM     # remaining time to explore  
 
+        # Criar uma matriz vazia
+        self.mapa = []
+
+        # Preencher a matriz com elementos (vamos usar 0 como exemplo)
+        for _ in range(int(self.rtime)):
+            linha = [0] * int(self.rtime)
+            self.mapa.append(linha)   
    
     
     def deliberate(self) -> bool:
@@ -35,7 +43,7 @@ class Explorer(AbstractAgent):
             # time to wake up the rescuer
             # pass the walls and the victims (here, they're empty)
             print(f"{self.NAME} I believe I've remaining time of {self.rtime:.1f}")
-            self.resc.go_save_victims([],[])
+            self.resc.go_save_victims([],[]) # primeiro parametro sao as paredes segundo as vitimas
             return False
         
         dx = random.choice([-1, 0, 1])
