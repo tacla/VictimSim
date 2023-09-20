@@ -106,7 +106,7 @@ class Explorer(AbstractAgent):
         result = self.body.walk(dx, dy)
 
         # Updates travel information
-        self.update_distance_to_base()
+        self.update_distance_to_base(dx, dy)
         self.update_number_of_moves()
 
         # Update remaining time
