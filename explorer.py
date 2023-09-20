@@ -9,7 +9,8 @@ from abstract_agent import AbstractAgent
 from physical_agent import PhysAgent
 from map import Map
 from abc import ABC, abstractmethod
-
+import heapq
+from node import Node
 
 class Explorer(AbstractAgent):
     def __init__(self, env, config_file, resc, path_priorities):
@@ -24,11 +25,12 @@ class Explorer(AbstractAgent):
         # Specific initialization for the rescuer
         self.resc = resc           # reference to the rescuer agent
         self.rtime = self.TLIM     # remaining time to explore   
-        self.horizontal = 0 #Incrementa se andar para a direita e decrementa se andar para a esquerda
+        self.horizontal = 0 # Incrementa se andar para a direita e decrementa se andar para a esquerda
         self.vertical = 0  # Incrementa se andar para baixo e decrementa se andar para cima
         self.number_of_moves = 0
-        self.known_map = []
         self.known_victims = []
+        self.known_map = []
+        self.first_move_back = True
 
         self.map = Map(path_priorities)
 
@@ -87,10 +89,17 @@ class Explorer(AbstractAgent):
         """ The agent chooses the next action. The simulator calls this
         method at each cycle. Must be implemented in every agent"""
 
+        self.update_known_map() # Adiciona base na lista
+
         if self.time_to_get_back():
             # Returns to base and notify the rescuer
             # If agent is not at the base, returns True
-            return self.get_back_to_base()
+            if self.first_move_back:
+                graphed_map = self.graph_known_map()
+                best_route = self.calc_best_return_route(graphed_map)
+                self.first_move_back = False
+
+            return self.get_back_to_base(best_route)
 
         # Check the neighborhood obstacles
         obstacles = self.body.check_obstacles()
@@ -99,7 +108,7 @@ class Explorer(AbstractAgent):
         dy = mov[0]
         dx = mov[1]
 
-        while not self.authorize(obstacles,dx,dy):
+        while not self.authorize(obstacles, dx, dy):
             mov = self.map.get_action()
             dy = mov[0]
             dx = mov[1]
@@ -129,48 +138,133 @@ class Explorer(AbstractAgent):
                 # print(vs)
                 
         return True
-    
-    def get_back_to_base(self):
-        # Moves the agent to the base
-        dx = 0
-        dy = 0
-        if self.horizontal < 0:
-            dx = 1
-        elif self.horizontal > 0:
-            dx = -1
-        if self.vertical < 0:
-            dy = 1
-        elif self.vertical > 0:
-            dy = -1
 
-        movx = dx
-        movy = dy
+    def calc_best_return_route(self, graphed_map):
+        init_pos, init_neighbours = list(graphed_map.items())[-1]
+        base_pos = (0, 0)
+        return self.astar(graphed_map, init_pos, base_pos)
 
-        while not self.authorize(self.body.check_obstacles(), movx, movy):
-            movy = random.choice([-1, 1, 0])
-            movx = random.choice([-1, 1, 0])
+    def astar(self, graph, start, goal):
+        open_list = []  # Lista de nós a serem avaliados
+        closed_set = set()  # Conjunto de nós já avaliados
+        heur = self.get_heuristic_estimate(start[0], start[1])
 
-        self.update_distance_to_base(movx, movy)
+        start_node = Node(start, None, 0, heur)
+        heapq.heappush(open_list, start_node)
 
-        # Moves the body to another position
-        result = self.body.walk(movx, movy)
-        self.update_known_map()
+        while open_list:
+            current_node = heapq.heappop(open_list)
 
-        # Update remaining time
-        self.update_remaining_time(dx, dy)
+            if current_node.state == goal:
+                # Se chegamos ao objetivo, reconstrua o caminho e retorne-o
+                return self.build_path(current_node)
 
-        if result == PhysAgent.EXECUTED:
-            # check for victim returns -1 if there is no victim or the sequential
-            # the sequential number of a found victim
-            self.map.update_agent_position(dx, dy)
-            seq = self.body.check_for_victim()
-            if seq >= 0:
-                vs = self.body.read_vital_signals(seq)
-                self.rtime -= self.COST_READ
-                # print("exp: read vital signals of " + str(seq))
-                # print(vs)
+            closed_set.add(current_node.state)
 
-        #self.resc.go_save_victims([],[])
+            for neighbor, cost in graph[current_node.state]:
+                if neighbor not in closed_set:
+                    # Cria um novo nó para o vizinho
+                    neighbor_node = Node(neighbor, current_node, current_node.cost + cost,
+                                         self.get_heuristic_estimate(neighbor[0], neighbor[1]))
+
+                    # Se o vizinho já está na lista aberta com um custo menor, ignore-o
+                    if not any(neighbor_node.state == node.state and neighbor_node.cost >= node.cost for node in
+                               open_list):
+                        heapq.heappush(open_list, neighbor_node)
+
+        # Se não encontramos um caminho, retornamos None
+        return None
+
+    def build_path(self, node):
+        # Reconstrói o caminho de volta do objetivo para o início
+        path = []
+        while node:
+            path.append(node.state)
+            node = node.parent
+        return list(reversed(path))
+
+    def movement_cost(self, pos1, pos2):
+        if pos1[0] != pos2[0] and pos1[1] != pos2[1]:  # Diagonal
+            return self.COST_DIAG
+        return self.COST_LINE
+
+    def graph_known_map(self):
+        for i, coord in enumerate(self.known_map):
+            neighbours = []
+            if any(sublist[:2] == list([coord[0] - 1, coord[1]]) for sublist in self.known_map):
+                neighbours.append([coord[0] - 1, coord[1], self.COST_LINE])
+            if any(sublist[:2] == list([coord[0], coord[1] - 1]) for sublist in self.known_map):
+                neighbours.append([coord[0], coord[1] - 1, self.COST_LINE])
+            if any(sublist[:2] == list([coord[0] - 1, coord[1] - 1]) for sublist in self.known_map):
+                neighbours.append([coord[0] - 1, coord[1] - 1, self.COST_DIAG])
+            if any(sublist[:2] == list([coord[0] + 1, coord[1]]) for sublist in self.known_map):
+                neighbours.append([coord[0] + 1, coord[1], self.COST_LINE])
+            if any(sublist[:2] == list([coord[0], coord[1] + 1]) for sublist in self.known_map):
+                neighbours.append([coord[0], coord[1] + 1, self.COST_LINE])
+            if any(sublist[:2] == list([coord[0] + 1, coord[1] + 1]) for sublist in self.known_map):
+                neighbours.append([coord[0] + 1, coord[1] + 1, self.COST_DIAG])
+            if any(sublist[:2] == list([coord[0] - 1, coord[1] + 1]) for sublist in self.known_map):
+                neighbours.append([coord[0] - 1, coord[1] + 1, self.COST_DIAG])
+            if any(sublist[:2] == list([coord[0] + 1, coord[1] - 1]) for sublist in self.known_map):
+                neighbours.append([coord[0] + 1, coord[1] - 1, self.COST_DIAG])
+
+            coord.append(neighbours)
+
+        # Transforma para formato em dicionario
+        graph = {}
+        for node_data in self.known_map:
+            x, y, neighbors = node_data
+            node_coords = (x, y)
+            neighbor_info = [((neighbor[0], neighbor[1]), neighbor[2]) for neighbor in neighbors]
+            graph[node_coords] = neighbor_info
+
+        return graph
+
+
+    # # Moves the agent to the base
+    # dx = 0
+    # dy = 0
+    # if self.horizontal < 0:
+    #     dx = 1
+    # elif self.horizontal > 0:
+    #     dx = -1
+    # if self.vertical < 0:
+    #     dy = 1
+    # elif self.vertical > 0:
+    #     dy = -1
+    #
+    # movx = dx
+    # movy = dy
+    #
+    # while not self.authorize(self.body.check_obstacles(), movx, movy):
+    #     movy = random.choice([-1, 1, 0])
+    #     movx = random.choice([-1, 1, 0])
+    #
+    # self.update_distance_to_base(movx, movy)
+    #
+    # # Moves the body to another position
+    # result = self.body.walk(movx, movy)
+    # self.update_known_map()
+    #
+    # # Update remaining time
+    # self.update_remaining_time(dx, dy)
+    #
+    # if result == PhysAgent.EXECUTED:
+    #     # check for victim returns -1 if there is no victim or the sequential
+    #     # the sequential number of a found victim
+    #     self.map.update_agent_position(dx, dy)
+    #     seq = self.body.check_for_victim()
+    #     if seq >= 0:
+    #         vs = self.body.read_vital_signals(seq)
+    #         self.rtime -= self.COST_READ
+    #         # print("exp: read vital signals of " + str(seq))
+    #         # print(vs)
+    #
+    # # self.resc.go_save_victims([],[])
+    def get_back_to_base(self, movements):
+
+
+
         if not self.at_base():
             return True
         else:
@@ -201,6 +295,12 @@ class Explorer(AbstractAgent):
     def update_known_map(self):
         if [self.horizontal, self.vertical] not in self.known_map:
             self.known_map.append([self.horizontal, self.vertical])
+
+    def get_heuristic_estimate(self, dx, dy):
+        # Estima o gasto necessário para voltar para a base a partir da coord atual
+        valor = min(abs(dx), abs(dy)) * self.COST_DIAG  # Anda o máximo que pode na diagonal
+        valor += abs((abs(dx) - abs(dy))) * self.COST_LINE # Anda o restante na vertical/horizontal
+        return valor
 
     def authorize(self, obstacles, x, y):
         if x == 0 and y == -1:
