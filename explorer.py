@@ -175,7 +175,7 @@ class Explorer(AbstractAgent):
             return True
         else:
             for i, r in enumerate(self.resc):
-                self.resc[i].merge_maps([self.known_map], [self.known_victims])
+                self.resc[i].merge_maps(list(self.known_map), list(self.known_victims))
             return False
 
     def time_to_get_back(self):

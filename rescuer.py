@@ -38,8 +38,12 @@ class Rescuer(AbstractAgent):
         self.body.set_state(PhysAgent.ACTIVE)
 
     def merge_maps(self, path, victims):
-        self.known_map = [set(path + self.known_map)]
-        self.known_victims = [set(path + self.known_victims)]
+        for i, coord in enumerate(path):
+            if coord not in self.known_map:
+                self.known_map.append(coord)
+        for i, victim in enumerate(victims):
+            if victim not in self.known_victims:
+                self.known_map.append(victim)
 
     def __planner(self):
         """ A private method that calculates the walk actions to rescue the
