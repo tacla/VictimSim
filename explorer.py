@@ -30,7 +30,8 @@ class Explorer(AbstractAgent):
         self.number_of_moves = 0
         self.known_victims = []
         self.known_map = []
-        self.first_move_back = True
+        self.best_route = []
+        self.returning_to_base = False
 
         self.map = Map(path_priorities)
 
@@ -94,12 +95,8 @@ class Explorer(AbstractAgent):
         if self.time_to_get_back():
             # Returns to base and notify the rescuer
             # If agent is not at the base, returns True
-            if self.first_move_back:
-                graphed_map = self.graph_known_map()
-                best_route = self.calc_best_return_route(graphed_map)
-                self.first_move_back = False
-
-            return self.get_back_to_base(best_route)
+            init_pos = (self.horizontal, self.vertical)
+            return self.get_back_to_base(self.best_route, init_pos)
 
         # Check the neighborhood obstacles
         obstacles = self.body.check_obstacles()
@@ -189,30 +186,38 @@ class Explorer(AbstractAgent):
         return self.COST_LINE
 
     def graph_known_map(self):
-        for i, coord in enumerate(self.known_map):
-            neighbours = []
-            if any(sublist[:2] == list([coord[0] - 1, coord[1]]) for sublist in self.known_map):
-                neighbours.append([coord[0] - 1, coord[1], self.COST_LINE])
-            if any(sublist[:2] == list([coord[0], coord[1] - 1]) for sublist in self.known_map):
-                neighbours.append([coord[0], coord[1] - 1, self.COST_LINE])
-            if any(sublist[:2] == list([coord[0] - 1, coord[1] - 1]) for sublist in self.known_map):
-                neighbours.append([coord[0] - 1, coord[1] - 1, self.COST_DIAG])
-            if any(sublist[:2] == list([coord[0] + 1, coord[1]]) for sublist in self.known_map):
-                neighbours.append([coord[0] + 1, coord[1], self.COST_LINE])
-            if any(sublist[:2] == list([coord[0], coord[1] + 1]) for sublist in self.known_map):
-                neighbours.append([coord[0], coord[1] + 1, self.COST_LINE])
-            if any(sublist[:2] == list([coord[0] + 1, coord[1] + 1]) for sublist in self.known_map):
-                neighbours.append([coord[0] + 1, coord[1] + 1, self.COST_DIAG])
-            if any(sublist[:2] == list([coord[0] - 1, coord[1] + 1]) for sublist in self.known_map):
-                neighbours.append([coord[0] - 1, coord[1] + 1, self.COST_DIAG])
-            if any(sublist[:2] == list([coord[0] + 1, coord[1] - 1]) for sublist in self.known_map):
-                neighbours.append([coord[0] + 1, coord[1] - 1, self.COST_DIAG])
 
+        map_copy = []
+
+        for c in self.known_map:
+            x = c[0]
+            y = c[1]
+            map_copy.append([x, y])
+
+        for i, coord in enumerate(map_copy):
+            neighbours = []
+            if any(sublist[:2] == list([coord[0] - 1, coord[1]]) for sublist in map_copy):
+                neighbours.append([coord[0] - 1, coord[1], self.COST_LINE])
+            if any(sublist[:2] == list([coord[0], coord[1] - 1]) for sublist in map_copy):
+                neighbours.append([coord[0], coord[1] - 1, self.COST_LINE])
+            if any(sublist[:2] == list([coord[0] - 1, coord[1] - 1]) for sublist in map_copy):
+                neighbours.append([coord[0] - 1, coord[1] - 1, self.COST_DIAG])
+            if any(sublist[:2] == list([coord[0] + 1, coord[1]]) for sublist in map_copy):
+                neighbours.append([coord[0] + 1, coord[1], self.COST_LINE])
+            if any(sublist[:2] == list([coord[0], coord[1] + 1]) for sublist in map_copy):
+                neighbours.append([coord[0], coord[1] + 1, self.COST_LINE])
+            if any(sublist[:2] == list([coord[0] + 1, coord[1] + 1]) for sublist in map_copy):
+                neighbours.append([coord[0] + 1, coord[1] + 1, self.COST_DIAG])
+            if any(sublist[:2] == list([coord[0] - 1, coord[1] + 1]) for sublist in map_copy):
+                neighbours.append([coord[0] - 1, coord[1] + 1, self.COST_DIAG])
+            if any(sublist[:2] == list([coord[0] + 1, coord[1] - 1]) for sublist in map_copy):
+                neighbours.append([coord[0] + 1, coord[1] - 1, self.COST_DIAG])
+            
             coord.append(neighbours)
 
         # Transforma para formato em dicionario
         graph = {}
-        for node_data in self.known_map:
+        for node_data in map_copy:
             x, y, neighbors = node_data
             node_coords = (x, y)
             neighbor_info = [((neighbor[0], neighbor[1]), neighbor[2]) for neighbor in neighbors]
@@ -261,9 +266,19 @@ class Explorer(AbstractAgent):
     #         # print(vs)
     #
     # # self.resc.go_save_victims([],[])
-    def get_back_to_base(self, movements):
+    def get_back_to_base(self, movements, init_pos):
 
+        mov = movements.pop(0)
 
+        dx = mov[0] - init_pos[0]
+        dy = mov[1] - init_pos[1]
+
+        self.update_distance_to_base(dx, dy)
+    
+        # Moves the body to another position
+        result = self.body.walk(dx, dy)
+        # Update remaining time
+        self.update_remaining_time(dx, dy)
 
         if not self.at_base():
             return True
@@ -273,7 +288,37 @@ class Explorer(AbstractAgent):
             return False
 
     def time_to_get_back(self):
-        return (abs(self.horizontal) + abs(self.vertical) + self.number_of_moves/5 >= self.rtime)
+
+        if self.returning_to_base:
+            return True
+
+        graphed_map = self.graph_known_map()
+        self.best_route = self.calc_best_return_route(graphed_map)
+        cost = self.calculate_cost_to_base(list(self.best_route))
+        if(cost + self.COST_DIAG >= self.rtime):
+            self.returning_to_base = True
+            self.best_route.pop(0)
+            return True
+        
+        return False
+    
+    def calculate_cost_to_base(self, best_route):
+        cost = 0
+        for i in range(len(best_route) - 1):
+            x1 = best_route[i][0]
+            y1 = best_route[i][1]
+            x2 = best_route[i + 1][0]
+            y2 = best_route[i + 1][1]
+
+            mov = (x2 - x1, y2 - y1)
+
+            if(mov == (0,1) or mov == (0,-1) or mov == (1,0) or mov == (-1,0)):
+                cost += self.COST_LINE
+            else:
+                cost += self.COST_DIAG
+
+        return cost
+
     
     def update_remaining_time(self, dx, dy):
          # Update remaining time

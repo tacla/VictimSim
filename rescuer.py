@@ -44,6 +44,8 @@ class Rescuer(AbstractAgent):
         for i, victim in enumerate(victims):
             if victim not in self.known_victims:
                 self.known_map.append(victim)
+        
+        self.go_save_victims([],[])
 
     def __planner(self):
         """ A private method that calculates the walk actions to rescue the
