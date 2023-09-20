@@ -27,6 +27,8 @@ class Explorer(AbstractAgent):
         self.horizontal = 0 #Incrementa se andar para a direita e decrementa se andar para a esquerda
         self.vertical = 0  # Incrementa se andar para baixo e decrementa se andar para cima
         self.number_of_moves = 0
+        self.known_map = []
+        self.known_victims = []
 
         self.map = Map(path_priorities)
 
@@ -107,6 +109,7 @@ class Explorer(AbstractAgent):
 
         # Updates travel information
         self.update_distance_to_base(dx, dy)
+        self.update_known_map()
         self.update_number_of_moves()
 
         # Update remaining time
@@ -120,6 +123,8 @@ class Explorer(AbstractAgent):
             if seq >= 0:
                 vs = self.body.read_vital_signals(seq)
                 self.rtime -= self.COST_READ
+                if [self.horizontal, self.vertical] not in self.known_victims:
+                    self.known_victims.append([self.horizontal, self.vertical, vs])
                 # print("exp: read vital signals of " + str(seq))
                 # print(vs)
                 
@@ -149,6 +154,7 @@ class Explorer(AbstractAgent):
 
         # Moves the body to another position
         result = self.body.walk(movx, movy)
+        self.update_known_map()
 
         # Update remaining time
         self.update_remaining_time(dx, dy)
@@ -168,7 +174,8 @@ class Explorer(AbstractAgent):
         if not self.at_base():
             return True
         else:
-            self.resc.go_save_victims([],[])
+            for i, r in enumerate(self.resc):
+                self.resc[i].merge_maps([self.known_map], [self.known_victims])
             return False
 
     def time_to_get_back(self):
@@ -182,7 +189,7 @@ class Explorer(AbstractAgent):
             self.rtime -= self.COST_LINE
 
     def at_base(self):
-        return (self.horizontal == 0 and self.vertical == 0)
+        return self.horizontal == 0 and self.vertical == 0
 
     def update_distance_to_base(self, dx, dy):
         self.horizontal += dx
@@ -190,7 +197,11 @@ class Explorer(AbstractAgent):
 
     def update_number_of_moves(self):
         self.number_of_moves += 1
-    
+
+    def update_known_map(self):
+        if [self.horizontal, self.vertical] not in self.known_map:
+            self.known_map.append([self.horizontal, self.vertical])
+
     def authorize(self, obstacles, x, y):
         if x == 0 and y == -1:
             if obstacles[0] != 0:

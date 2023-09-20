@@ -29,10 +29,10 @@ def main(data_folder_name):
     # Explorer needs to know rescuer to send the map
     # that's why rescuer is instatiated before
     lista = ['E', 'N', 'NW', 'SW', 'NE', 'SE', 'W', 'S']
-    exp = Explorer(env, explorer_file, resc, random.sample(lista, len(lista)))
-    exp = Explorer(env, explorer_file, resc, random.sample(lista, len(lista)))
-    exp = Explorer(env, explorer_file, resc, random.sample(lista, len(lista)))
-    exp = Explorer(env, explorer_file, resc, random.sample(lista, len(lista)))
+    exp = Explorer(env, explorer_file, [resc], random.sample(lista, len(lista)))
+    exp = Explorer(env, explorer_file, [resc], random.sample(lista, len(lista)))
+    exp = Explorer(env, explorer_file, [resc], random.sample(lista, len(lista)))
+    exp = Explorer(env, explorer_file, [resc], random.sample(lista, len(lista)))
 
     # Run the environment simulator
     env.run()
