@@ -19,7 +19,8 @@ class KMeans():
 
         for group in groups:
             new_centroid = self.centroid(group[1])
-            group[0] = new_centroid
+            if(new_centroid != None):
+                group[0] = new_centroid
 
         return self.redistribute(groups)
 
@@ -101,16 +102,19 @@ class KMeans():
         return centroids
 
     def centroid(self, group):
+        # Caso não haja ninguém no grupo
+        if(len(group == 0)):
+            return None
+
         x_average = 0
         y_average = 0
 
         for victim in group:
             x_average += victim[0][0]
             y_average += victim[0][1]
-            
+
         x_average /= len(group)
         y_average /= len(group)
-
         return (x_average, y_average)
 
     def distance_to_centroid(self, victim, centroid):
