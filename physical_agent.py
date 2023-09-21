@@ -21,9 +21,9 @@ class PhysAgent:
     EXECUTED = 1       # action successfully executed
 
     # Possible results for the check_obstacles method
-    CLEAR = 0
-    WALL = 1
-    END = 2
+    CLEAR = -3
+    WALL = -1
+    END = -4
 
     def __init__(self, mind, env, x_base, y_base, state=ACTIVE):
         """Instatiates a physical agent
@@ -101,8 +101,8 @@ class PhysAgent:
         above the current position of the agent, the second is in the upper right diagonal direction, the third is to the right, and so on."        
         Each vector position containg one of the following values: {CLEAR, WALL, END}
         CLEAR means that there is no obstacle (value = 0)
-        WALL means that there is a wall (value = 1)
-        END means the end of the grid (value = 2)
+        WALL means that there is a wall (value = -1)
+        END means the end of the grid (value = -4)
         """
         
         delta = [(0,-1),(1,-1),(1,0),(1,1),(0,1),(-1,1),(-1,0),(-1,-1)]
