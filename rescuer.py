@@ -7,6 +7,7 @@ import random
 from abstract_agent import AbstractAgent
 from physical_agent import PhysAgent
 from abc import ABC, abstractmethod
+from kmeans import KMeans
 
 
 ## Classe que define o Agente Rescuer com um plano fixo
@@ -27,25 +28,32 @@ class Rescuer(AbstractAgent):
         self.body.set_state(PhysAgent.IDLE)
         self.known_map = []
         self.known_victims = []
+        self.received_maps = 0
 
         # planning
         self.__planner()
     
-    def go_save_victims(self, path, victims):
+    def go_save_victims(self):
         """ The explorer sends the map containing the walls and
         victims' location. The rescuer becomes ACTIVE. From now,
         the deliberate method is called by the environment"""
         self.body.set_state(PhysAgent.ACTIVE)
+        cluster = KMeans()
+        cluster.execute(self.known_victims, 4)
 
     def merge_maps(self, path, victims):
-        for i, coord in enumerate(path):
-            if coord not in self.known_map:
-                self.known_map.append(coord)
+        # for i, coord in enumerate(path):
+        #     if coord not in self.known_map:
+        #         self.known_map.append(coord)
+        self.received_maps +=1
+
         for i, victim in enumerate(victims):
             if victim not in self.known_victims:
-                self.known_map.append(victim)
+                self.known_victims.append(victim)
         
-        self.go_save_victims([],[])
+        if self.received_maps == 4:
+            self.go_save_victims()
+        #self.go_save_victims()
 
     def __planner(self):
         """ A private method that calculates the walk actions to rescue the

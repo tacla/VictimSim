@@ -170,7 +170,7 @@ class Explorer(AbstractAgent):
                 vs = self.body.read_vital_signals(seq)
                 self.rtime -= self.COST_READ
                 if [self.horizontal, self.vertical] not in self.known_victims:
-                    self.known_victims.append([self.horizontal, self.vertical, vs])
+                    self.known_victims.append(((self.horizontal, self.vertical), vs))
                 # print("exp: read vital signals of " + str(seq))
                 # print(vs)
                 
