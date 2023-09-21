@@ -154,7 +154,7 @@ class Explorer(AbstractAgent):
             print(f"{self.NAME} I believe I've remaining time of {self.rtime:.1f}")
             
             if self.mapa[int(self.x)][int(self.y)] == 0:
-                #Chama o rescuer 
+                self.resc.go_save_victims([],[])
                 return False
             else:
                 return True
