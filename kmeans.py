@@ -103,7 +103,7 @@ class KMeans():
 
     def centroid(self, group):
         # Caso não haja ninguém no grupo
-        if(len(group == 0)):
+        if(len(group) == 0):
             return None
 
         x_average = 0
