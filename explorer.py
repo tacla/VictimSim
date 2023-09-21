@@ -34,107 +34,19 @@ class Explorer(AbstractAgent):
         self.returning_to_base = False
 
         self.map = Map(path_priorities)
-
-   
-    
-    # def deliberate(self) -> bool:
-    #     """ The agent chooses the next action. The simulator calls this
-    #     method at each cycle. Must be implemented in every agent"""
-
-    #     # No more actions, time almost ended
-    #     if self.rtime < 10.0: 
-    #         # time to wake up the rescuer
-    #         # pass the walls and the victims (here, they're empty)
-    #         print(f"{self.NAME} I believe I've remaining time of {self.rtime:.1f}")
-    #         self.resc.go_save_victims([],[])
-    #         return False
-        
-    #     dx = random.choice([-1, 0, 1])
-
-    #     if dx == 0:
-    #        dy = random.choice([-1, 1])
-    #     else:
-    #        dy = random.choice([-1, 0, 1])
-        
-    #     # Check the neighborhood obstacles
-    #     obstacles = self.body.check_obstacles()
-
-
-    #     # Moves the body to another position
-    #     result = self.body.walk(dx, dy)
-
-    #     # Update remaining time
-    #     if dx != 0 and dy != 0:
-    #         self.rtime -= self.COST_DIAG
-    #     else:
-    #         self.rtime -= self.COST_LINE
-
-    #     # Test the result of the walk action
-    #     if result == PhysAgent.BUMPED:
-    #         walls = 1  # build the map- to do
-    #         # print(self.name() + ": wall or grid limit reached")
-
-    #     if result == PhysAgent.EXECUTED:
-    #         # check for victim returns -1 if there is no victim or the sequential
-    #         # the sequential number of a found victim
-    #         seq = self.body.check_for_victim()
-    #         if seq >= 0:
-    #             vs = self.body.read_vital_signals(seq)
-    #             self.rtime -= self.COST_READ
-    #             # print("exp: read vital signals of " + str(seq))
-    #             # print(vs)
-                
-    #     return True
     
     def deliberate(self) -> bool:
         """ The agent chooses the next action. The simulator calls this
         method at each cycle. Must be implemented in every agent"""
 
         self.update_known_map() # Adiciona base na lista
-
+        
         if self.time_to_get_back():
             # Returns to base and notify the rescuer
             # If agent is not at the base, returns True
-            init_pos = (self.horizontal, self.vertical)
-            return self.get_back_to_base(self.best_route, init_pos)
+            return self.get_back_to_base()
 
-        # Check the neighborhood obstacles
-        obstacles = self.body.check_obstacles()
-        
-        mov = self.map.get_action()
-        dy = mov[0]
-        dx = mov[1]
-
-        while not self.authorize(obstacles, dx, dy):
-            mov = self.map.get_action()
-            dy = mov[0]
-            dx = mov[1]
-            
-        # Moves the body to another position
-        result = self.body.walk(dx, dy)
-
-        # Updates travel information
-        self.update_distance_to_base(dx, dy)
-        self.update_known_map()
-        self.update_number_of_moves()
-
-        # Update remaining time
-        self.update_remaining_time(dx, dy)
-
-        if result == PhysAgent.EXECUTED:
-            # check for victim returns -1 if there is no victim or the sequential
-            # the sequential number of a found victim
-            self.map.update_agent_position(dx,dy)
-            seq = self.body.check_for_victim()
-            if seq >= 0:
-                vs = self.body.read_vital_signals(seq)
-                self.rtime -= self.COST_READ
-                if [self.horizontal, self.vertical] not in self.known_victims:
-                    self.known_victims.append([self.horizontal, self.vertical, vs])
-                # print("exp: read vital signals of " + str(seq))
-                # print(vs)
-                
-        return True
+        return self.explore()
 
     def calc_best_return_route(self, graphed_map):
         init_pos, init_neighbours = list(graphed_map.items())[-1]
@@ -224,50 +136,50 @@ class Explorer(AbstractAgent):
             graph[node_coords] = neighbor_info
 
         return graph
+    
+    def explore(self):
+         # Check the neighborhood obstacles
+        obstacles = self.body.check_obstacles()
+        
+        mov = self.map.get_action()
+        dy = mov[0]
+        dx = mov[1]
 
+        while not self.authorize(obstacles, dx, dy):
+            mov = self.map.get_action()
+            dy = mov[0]
+            dx = mov[1]
+            
+        # Moves the body to another position
+        result = self.body.walk(dx, dy)
 
-    # # Moves the agent to the base
-    # dx = 0
-    # dy = 0
-    # if self.horizontal < 0:
-    #     dx = 1
-    # elif self.horizontal > 0:
-    #     dx = -1
-    # if self.vertical < 0:
-    #     dy = 1
-    # elif self.vertical > 0:
-    #     dy = -1
-    #
-    # movx = dx
-    # movy = dy
-    #
-    # while not self.authorize(self.body.check_obstacles(), movx, movy):
-    #     movy = random.choice([-1, 1, 0])
-    #     movx = random.choice([-1, 1, 0])
-    #
-    # self.update_distance_to_base(movx, movy)
-    #
-    # # Moves the body to another position
-    # result = self.body.walk(movx, movy)
-    # self.update_known_map()
-    #
-    # # Update remaining time
-    # self.update_remaining_time(dx, dy)
-    #
-    # if result == PhysAgent.EXECUTED:
-    #     # check for victim returns -1 if there is no victim or the sequential
-    #     # the sequential number of a found victim
-    #     self.map.update_agent_position(dx, dy)
-    #     seq = self.body.check_for_victim()
-    #     if seq >= 0:
-    #         vs = self.body.read_vital_signals(seq)
-    #         self.rtime -= self.COST_READ
-    #         # print("exp: read vital signals of " + str(seq))
-    #         # print(vs)
-    #
-    # # self.resc.go_save_victims([],[])
-    def get_back_to_base(self, movements, init_pos):
+        # Updates travel information
+        self.update_distance_to_base(dx, dy)
+        self.update_known_map()
+        self.update_number_of_moves()
 
+        # Update remaining time
+        self.update_remaining_time(dx, dy)
+
+        if result == PhysAgent.EXECUTED:
+            # check for victim returns -1 if there is no victim or the sequential
+            # the sequential number of a found victim
+            self.map.update_agent_position(dx,dy)
+            seq = self.body.check_for_victim()
+            if seq >= 0:
+                vs = self.body.read_vital_signals(seq)
+                self.rtime -= self.COST_READ
+                if [self.horizontal, self.vertical] not in self.known_victims:
+                    self.known_victims.append([self.horizontal, self.vertical, vs])
+                # print("exp: read vital signals of " + str(seq))
+                # print(vs)
+                
+        return True
+
+    def get_back_to_base(self):
+        
+        init_pos = (self.horizontal, self.vertical)
+        movements = self.best_route
         mov = movements.pop(0)
 
         dx = mov[0] - init_pos[0]
@@ -295,7 +207,11 @@ class Explorer(AbstractAgent):
         graphed_map = self.graph_known_map()
         self.best_route = self.calc_best_return_route(graphed_map)
         cost = self.calculate_cost_to_base(list(self.best_route))
-        if(cost + self.COST_DIAG >= self.rtime):
+        if(cost > self.rtime):
+            print(f"cost -> {cost}")
+            print(f"rtime -> {self.rtime}")
+            exit()
+        if(cost + 2*self.COST_DIAG + self.COST_READ >= self.rtime):
             self.returning_to_base = True
             self.best_route.pop(0)
             return True
