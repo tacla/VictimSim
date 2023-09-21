@@ -28,6 +28,7 @@ class Explorer(AbstractAgent):
 
         # Criar uma matriz vazia
         self.mapa = []
+        self.vitimas = []
         self.direction = direction # 0- cima, 1- direita, 2- baixo, 3- esquerda
         # Define as ações possíveis (movimentos)
         self.acoes = [(0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1)]
@@ -37,7 +38,7 @@ class Explorer(AbstractAgent):
         self.y = int(self.rtime/2)
 
 
-        # Preencher a matriz com elementos (vamos usar 0 como exemplo)
+        # Preencher a matriz com elementos (-3 não foi explorado)
         for _ in range(int(self.rtime)):
             linha = [-3] * int(self.rtime)
             self.mapa.append(linha) 
@@ -137,12 +138,27 @@ class Explorer(AbstractAgent):
         method at each cycle. Must be implemented in every agent"""
 
         # No more actions, time almost ended
-        if self.rtime < 1.0: 
-            # time to wake up the rescuer
-            # pass the walls and the victims (here, they're empty)
+        if self.rtime < self.mapa[self.x][self.y] + 2: 
+            # back to base
+            dx,dy = self.voltarBase()
+            result = self.body.walk(dx, dy)
+
+            if result == 1:
+                self.x = self.x + dx
+                self.y = self.y + dy
+            
+            # Update remaining time
+            if dx != 0 and dy != 0:
+                self.rtime -= self.COST_DIAG
+            else:
+                self.rtime -= self.COST_LINE
             print(f"{self.NAME} I believe I've remaining time of {self.rtime:.1f}")
-            self.resc.go_save_victims([],[]) # primeiro parametro sao as paredes segundo as vitimas
-            return False
+            
+            if self.mapa[int(self.x)][int(self.y)] == 0:
+                self.resc.go_save_victims(self.mapa,self.vitimas)
+                return False
+            else:
+                return True
 
         # Check the neighborhood obstacles
         obstacles = self.body.check_obstacles()
@@ -178,6 +194,7 @@ class Explorer(AbstractAgent):
             # the sequential number of a found victim
             seq = self.body.check_for_victim()
             if seq >= 0:
+                self.vitimas.append((self.x,self.y))
                 vs = self.body.read_vital_signals(seq)
                 self.rtime -= self.COST_READ
                 # print("exp: read vital signals of " + str(seq))
@@ -220,3 +237,21 @@ class Explorer(AbstractAgent):
         # print()
 
 
+    def voltarBase(self):
+        loc =  [[0, 0, 0],
+                [0, 0, 0],
+                [0, 0, 0]]
+        
+        min = sys.maxsize
+        x_min = 0
+        y_min = 0
+
+        for x in [-1,0,1]:
+            for y in [-1, 0, 1]:
+                loc[x][y] = self.mapa[int(self.x) + x][int(self.y) + y]
+                if loc[x][y] < min and loc[x][y] >= 0:
+                    y_min = y
+                    x_min = x
+                    min = loc[x][y]
+
+        return x_min, y_min

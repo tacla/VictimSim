@@ -21,7 +21,9 @@ class Rescuer(AbstractAgent):
         # Specific initialization for the rescuer
         self.plan = []              # a list of planned actions
         self.rtime = self.TLIM      # for controlling the remaining time
-        
+        self.n_explorer = 0
+        self.mapa =[]
+        self.vitimas=[]
         # Starts in IDLE state.
         # It changes to ACTIVE when the map arrives
         self.body.set_state(PhysAgent.IDLE)
@@ -29,11 +31,23 @@ class Rescuer(AbstractAgent):
         # planning
         self.__planner()
     
-    def go_save_victims(self, walls, victims):
-        """ The explorer sends the map containing the walls and
-        victims' location. The rescuer becomes ACTIVE. From now,
-        the deliberate method is called by the environment"""
-        self.body.set_state(PhysAgent.ACTIVE)
+    def go_save_victims(self, mapa, vitimas):
+        if self.n_explorer == 0:
+            self.mapa = mapa
+        else:
+            for i in range(len(mapa)):
+                for j in range(len(mapa[i])):
+                    if mapa[i][j] == -3 or (mapa[i][j] < self.mapa[i][j] and mapa[i][j]>0):
+                        self.mapa[i][j] = mapa[i][j]
+            
+        self.n_explorer = self.n_explorer + 1
+        self.vitimas.extend(vitimas)
+        # Remove os duplicados mantendo apenas uma ocorrência de cada número
+        self.vitimas = list(set(self.vitimas))
+
+        if self.n_explorer == 4:
+            print("NUMERO DE VITIMAS ENCONTRADAS:", len(self.vitimas))
+            self.body.set_state(PhysAgent.ACTIVE)
         
     
     def __planner(self):
