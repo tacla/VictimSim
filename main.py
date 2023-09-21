@@ -30,10 +30,10 @@ def main(data_folder_name):
 
     # Explorer needs to know rescuer to send the map
     # that's why rescuer is instatiated before
-    exp1 = Explorer(env, explorer_file, resc1)
-    exp2 = Explorer(env, explorer_file, resc1)
-    exp3 = Explorer(env, explorer_file, resc1)
-    exp4 = Explorer(env, explorer_file, resc1)
+    exp1 = Explorer(env, explorer_file, resc1, 0)
+    exp2 = Explorer(env, explorer_file, resc1, 1)
+    exp3 = Explorer(env, explorer_file, resc1, 2)
+    exp4 = Explorer(env, explorer_file, resc1, 3)
 
     # Run the environment simulator
     env.run()
