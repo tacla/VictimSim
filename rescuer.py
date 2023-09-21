@@ -46,6 +46,7 @@ class Rescuer(AbstractAgent):
         self.vitimas = list(set(self.vitimas))
 
         if self.n_explorer == 4:
+            print("NUMERO DE VITIMAS ENCONTRADAS:", len(self.vitimas))
             self.body.set_state(PhysAgent.ACTIVE)
         
     

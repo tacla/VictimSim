@@ -28,6 +28,7 @@ class Explorer(AbstractAgent):
 
         # Criar uma matriz vazia
         self.mapa = []
+        self.vitimas = []
         self.direction = direction # 0- cima, 1- direita, 2- baixo, 3- esquerda
         # Define as ações possíveis (movimentos)
         self.acoes = [(0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1)]
@@ -137,7 +138,7 @@ class Explorer(AbstractAgent):
         method at each cycle. Must be implemented in every agent"""
 
         # No more actions, time almost ended
-        if self.rtime < self.mapa[self.x][self.y]+ 1.5: 
+        if self.rtime < self.mapa[self.x][self.y] + 2: 
             # back to base
             dx,dy = self.voltarBase()
             result = self.body.walk(dx, dy)
@@ -154,7 +155,7 @@ class Explorer(AbstractAgent):
             print(f"{self.NAME} I believe I've remaining time of {self.rtime:.1f}")
             
             if self.mapa[int(self.x)][int(self.y)] == 0:
-                self.resc.go_save_victims([],[])
+                self.resc.go_save_victims(self.mapa,self.vitimas)
                 return False
             else:
                 return True
@@ -193,6 +194,7 @@ class Explorer(AbstractAgent):
             # the sequential number of a found victim
             seq = self.body.check_for_victim()
             if seq >= 0:
+                self.vitimas.append((self.x,self.y))
                 vs = self.body.read_vital_signals(seq)
                 self.rtime -= self.COST_READ
                 # print("exp: read vital signals of " + str(seq))
