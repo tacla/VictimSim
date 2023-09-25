@@ -37,6 +37,8 @@ class Rescuer(AbstractAgent):
         """ The explorer sends the map containing the walls and
         victims' location. The rescuer becomes ACTIVE. From now,
         the deliberate method is called by the environment"""
+        print(len(self.known_victims))
+        #exit()
         self.body.set_state(PhysAgent.ACTIVE)
         cluster = KMeans()
         cluster.execute(self.known_victims, 4)
@@ -50,7 +52,7 @@ class Rescuer(AbstractAgent):
         for i, victim in enumerate(victims):
             if victim not in self.known_victims:
                 self.known_victims.append(victim)
-        
+
         if self.received_maps == 4:
             self.go_save_victims()
         #self.go_save_victims()

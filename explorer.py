@@ -11,6 +11,7 @@ from map import Map
 from abc import ABC, abstractmethod
 import heapq
 from node import Node
+import time
 
 class Explorer(AbstractAgent):
     def __init__(self, env, config_file, resc, path_priorities):
@@ -31,6 +32,7 @@ class Explorer(AbstractAgent):
         self.known_victims = []
         self.known_map = []
         self.best_route = []
+        self.map_graph = {}
         self.returning_to_base = False
 
         self.map = Map(path_priorities)
@@ -51,9 +53,11 @@ class Explorer(AbstractAgent):
     def calc_best_return_route(self, graphed_map):
         init_pos, init_neighbours = list(graphed_map.items())[-1]
         base_pos = (0, 0)
-        return self.astar(graphed_map, init_pos, base_pos)
+        result = self.astar(graphed_map, init_pos, base_pos)
+        return result
 
     def astar(self, graph, start, goal):
+        
         open_list = []  # Lista de nós a serem avaliados
         closed_set = set()  # Conjunto de nós já avaliados
         heur = self.get_heuristic_estimate(start[0], start[1])
@@ -80,7 +84,6 @@ class Explorer(AbstractAgent):
                     if not any(neighbor_node.state == node.state and neighbor_node.cost >= node.cost for node in
                                open_list):
                         heapq.heappush(open_list, neighbor_node)
-
         # Se não encontramos um caminho, retornamos None
         return None
 
@@ -97,45 +100,6 @@ class Explorer(AbstractAgent):
             return self.COST_DIAG
         return self.COST_LINE
 
-    def graph_known_map(self):
-
-        map_copy = []
-
-        for c in self.known_map:
-            x = c[0]
-            y = c[1]
-            map_copy.append([x, y])
-
-        for i, coord in enumerate(map_copy):
-            neighbours = []
-            if any(sublist[:2] == list([coord[0] - 1, coord[1]]) for sublist in map_copy):
-                neighbours.append([coord[0] - 1, coord[1], self.COST_LINE])
-            if any(sublist[:2] == list([coord[0], coord[1] - 1]) for sublist in map_copy):
-                neighbours.append([coord[0], coord[1] - 1, self.COST_LINE])
-            if any(sublist[:2] == list([coord[0] - 1, coord[1] - 1]) for sublist in map_copy):
-                neighbours.append([coord[0] - 1, coord[1] - 1, self.COST_DIAG])
-            if any(sublist[:2] == list([coord[0] + 1, coord[1]]) for sublist in map_copy):
-                neighbours.append([coord[0] + 1, coord[1], self.COST_LINE])
-            if any(sublist[:2] == list([coord[0], coord[1] + 1]) for sublist in map_copy):
-                neighbours.append([coord[0], coord[1] + 1, self.COST_LINE])
-            if any(sublist[:2] == list([coord[0] + 1, coord[1] + 1]) for sublist in map_copy):
-                neighbours.append([coord[0] + 1, coord[1] + 1, self.COST_DIAG])
-            if any(sublist[:2] == list([coord[0] - 1, coord[1] + 1]) for sublist in map_copy):
-                neighbours.append([coord[0] - 1, coord[1] + 1, self.COST_DIAG])
-            if any(sublist[:2] == list([coord[0] + 1, coord[1] - 1]) for sublist in map_copy):
-                neighbours.append([coord[0] + 1, coord[1] - 1, self.COST_DIAG])
-            
-            coord.append(neighbours)
-
-        # Transforma para formato em dicionario
-        graph = {}
-        for node_data in map_copy:
-            x, y, neighbors = node_data
-            node_coords = (x, y)
-            neighbor_info = [((neighbor[0], neighbor[1]), neighbor[2]) for neighbor in neighbors]
-            graph[node_coords] = neighbor_info
-
-        return graph
     
     def explore(self):
          # Check the neighborhood obstacles
@@ -203,14 +167,10 @@ class Explorer(AbstractAgent):
 
         if self.returning_to_base:
             return True
-
-        graphed_map = self.graph_known_map()
-        self.best_route = self.calc_best_return_route(graphed_map)
+        
+        self.best_route = self.calc_best_return_route(self.map_graph)
         cost = self.calculate_cost_to_base(list(self.best_route))
-        if(cost > self.rtime):
-            print(f"cost -> {cost}")
-            print(f"rtime -> {self.rtime}")
-            exit()
+        
         if(cost + 2*self.COST_DIAG + self.COST_READ >= self.rtime):
             self.returning_to_base = True
             self.best_route.pop(0)
@@ -256,6 +216,33 @@ class Explorer(AbstractAgent):
     def update_known_map(self):
         if [self.horizontal, self.vertical] not in self.known_map:
             self.known_map.append([self.horizontal, self.vertical])
+            discovered = (self.horizontal, self.vertical)
+            self.map_graph[discovered] = []
+            for coord in self.map_graph.keys():
+                cost = self.is_neighbour(discovered, coord)
+                if cost != None:
+                    self.map_graph[discovered].append([coord, cost])
+                    self.map_graph[coord].append([discovered, cost])
+            end_time = time.time()
+                
+    def is_neighbour(self, coord1, coord2):
+        if (coord1[0] - 1, coord1[1]) == coord2:
+            return self.COST_LINE
+        if (coord1[0], coord1[1] - 1) == coord2:
+            return self.COST_LINE
+        if (coord1[0] - 1, coord1[1] - 1) == coord2:
+            return self.COST_DIAG
+        if (coord1[0] + 1, coord1[1]) == coord2:
+            return self.COST_LINE
+        if (coord1[0], coord1[1] + 1) == coord2:
+            return self.COST_LINE
+        if (coord1[0] + 1, coord1[1] + 1) == coord2:
+            return self.COST_DIAG
+        if (coord1[0] + 1, coord1[1] - 1) == coord2:
+            return self.COST_DIAG
+        if (coord1[0] - 1, coord1[1] + 1) == coord2:
+            return self.COST_DIAG
+        return None
 
     def get_heuristic_estimate(self, dx, dy):
         # Estima o gasto necessário para voltar para a base a partir da coord atual
