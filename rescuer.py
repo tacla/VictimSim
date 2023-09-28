@@ -4,6 +4,7 @@
 
 import os
 import random
+import math
 from abstract_agent import AbstractAgent
 from physical_agent import PhysAgent
 from abc import ABC, abstractmethod
@@ -24,6 +25,11 @@ class Rescuer(AbstractAgent):
         self.n_explorer = 0
         self.mapa =[]
         self.vitimas=[]
+
+        #clustering
+        self.K_list = [[] for _ in range(4)]
+        self.K_centers = [[] for _ in range(4)]
+
         # Starts in IDLE state.
         # It changes to ACTIVE when the map arrives
         self.body.set_state(PhysAgent.IDLE)
@@ -48,7 +54,36 @@ class Rescuer(AbstractAgent):
         if self.n_explorer == 4:
             print("NUMERO DE VITIMAS ENCONTRADAS:", len(self.vitimas))
             self.body.set_state(PhysAgent.ACTIVE)
-        
+            #CLUSTERING
+            self.K_centers[0] = (len(mapa)*0.25, len(mapa)*0.25)
+            self.K_centers[1] = (len(mapa)*0.75, len(mapa)*0.25)
+            self.K_centers[2] = (len(mapa)*0.25, len(mapa)*0.75)
+            self.K_centers[3] = (len(mapa)*0.75, len(mapa)*0.75)        
+            
+           
+
+            for i in range(len(self.vitimas)):
+                menor_distancia = float('inf')
+                center_index = 0
+                for j, center in enumerate(self.K_centers):
+                    dist = self.distancia_entre_pontos(self.vitimas[i], center)
+                    if dist < menor_distancia:
+                        menor_distancia = dist
+                        center_index = i
+                self.K_list[center_index].append(self.vitimas[i])
+                lista_centro = self.K_list[center_index]
+                total_x = sum(x for x, _ in lista_centro) + self.K_centers[center_index][0]
+                total_y = sum(y for _, y in lista_centro) + self.K_centers[center_index][1]
+                n = len(lista_centro) + 1 
+                self.K_centers[center_index] = (total_x / n, total_y / n)
+
+
+    def distancia_entre_pontos(self,ponto1, ponto2):
+        x1, y1 = ponto1
+        x2, y2 = ponto2
+        return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+
+
     
     def __planner(self):
         """ A private method that calculates the walk actions to rescue the
