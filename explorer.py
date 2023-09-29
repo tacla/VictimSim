@@ -33,9 +33,13 @@ class Explorer(AbstractAgent):
         # Define as ações possíveis (movimentos)
         self.acoes = [(0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1)]
         self.last = (0, 1)
+        self.ult = (0, 1)
 
         self.x = int(self.rtime/2)
         self.y = int(self.rtime/2)
+
+        self.loop = 0
+        self.stuck = False
 
 
         # Preencher a matriz com elementos (-3 não foi explorado)
@@ -45,6 +49,23 @@ class Explorer(AbstractAgent):
         self.mapa[int(self.rtime/2)][int(self.rtime/2)] = 0
 
     def explorar(self, mapa, pAtual):
+        if self.stuck:
+            for i in range(0, 8):
+                indice = (self.direction * 2 + i) % 8
+                posicao = self.mapa[self.x + self.acoes[indice][0]][self.y + self.acoes[indice][1]]
+                if posicao == -3:
+                    self.stuck = False
+                    return self.acoes[indice][0], self.acoes[indice][1]
+            self.loop += 1
+            if self.loop >= 4:
+                self.loop = 0
+                return random.choice(self.acoes)
+            for i in range(0, 8):
+                indice = (self.direction * 2 + i) % 8
+                posicao = self.mapa[self.x + self.acoes[indice][0]][self.y + self.acoes[indice][1]]
+                if posicao != -1 and posicao != -4 and (self.acoes[indice][0] != self.ult[0] * -1 or self.acoes[indice][1] != self.ult[1] * -1):
+                    return self.acoes[indice][0], self.acoes[indice][1]
+
         if pAtual == (len(mapa)/2, len(mapa)/2):
             return self.acoes[self.direction * 2]
         
@@ -59,7 +80,6 @@ class Explorer(AbstractAgent):
             sinal = -1
             if fix * (pAtual[sentido] - len(mapa)/2)  + ((diff + 1) // 2) != 0:
                 if fix * (pAtual[sentido] - len(mapa)/2)  + ((diff + 1) // 2) < 0:
-                    min = sys.maxsize
                     for i in range(0, 8):
                         indice = (self.last[0] + i * self.last[1]) % 8
                         posicao = self.mapa[self.x + self.acoes[indice][0]][self.y + self.acoes[indice][1]]
@@ -67,12 +87,8 @@ class Explorer(AbstractAgent):
                             dx = self.acoes[indice][0]
                             dy = self.acoes[indice][1]
                             return dx, dy
-                        elif posicao >= 0 and posicao < min:
-                            min = posicao
-                            xMin = self.acoes[indice][0]
-                            yMin = self.acoes[indice][1]
-                    self.mapa[pAtual[0]][pAtual[1]] = -1
-                    return xMin, yMin
+                    self.stuck = True
+                    return 0, 0
                 else:   
                     cod = ((self.direction * 2) + 2) % 8
                     tam = 4
@@ -83,21 +99,15 @@ class Explorer(AbstractAgent):
             sinal = 1
             if fix * (pAtual[sentido] - len(mapa)/2)- ((diff) // 2) != 0:
                 if fix * (pAtual[sentido] - len(mapa)/2)- ((diff) // 2) > 0:
-                    min = sys.maxsize
                     for i in range(0, 8):
                         indice = (self.last[0] + i * self.last[1]) % 8
                         posicao = self.mapa[self.x + self.acoes[indice][0]][self.y + self.acoes[indice][1]]
                         if posicao == -3:
-                            dx = self.acoes[i][0]
-                            dy = self.acoes[i][1]
-                            flag = True
+                            dx = self.acoes[indice][0]
+                            dy = self.acoes[indice][1]
                             return dx, dy
-                        elif posicao >= 0 and posicao < min:
-                            min = posicao
-                            xMin = self.acoes[indice][0]
-                            yMin = self.acoes[indice][1]
-                    self.mapa[pAtual[0]][pAtual[1]] = -1
-                    return xMin, yMin
+                    self.stuck = True
+                    return 0, 0
                 cod = ((self.direction * 2) - 2) % 8
                 tam = 4
             else:
@@ -105,7 +115,7 @@ class Explorer(AbstractAgent):
                 tam = 2
         dx = self.acoes[cod][0]
         dy = self.acoes[cod][1]
-        if self.mapa[pAtual[0] + dx][pAtual[1] + dy] == -1:
+        if self.mapa[pAtual[0] + dx][pAtual[1] + dy] == -1 or self.mapa[pAtual[0] + dx][pAtual[1] + dy] == -4:
             for i in range(1, tam + 1):
                 indice = (cod + (sinal * i)) % 8
                 if self.mapa[pAtual[0] + self.acoes[indice][0]][pAtual[1] + self.acoes[indice][1]] == -3:
@@ -113,24 +123,16 @@ class Explorer(AbstractAgent):
                     dy = self.acoes[indice][1]
                     return dx, dy
 
-            flag = False
-            while not flag:
-                for i in range(0, 8):
-                    posicao = self.mapa[self.x + self.acoes[i][0]][self.y + self.acoes[i][1]]
-                    min = sys.maxsize
-                    if posicao == -3:
-                        dx = self.acoes[i][0]
-                        dy = self.acoes[i][1]
-                        flag = True
-                        return dx, dy
-                    elif posicao >= 0 and posicao < min:
-                        min = posicao
-                        xMin = self.acoes[indice][0]
-                        yMin = self.acoes[indice][1]
-                self.mapa[pAtual[0]][pAtual[1]] = -1
-                return xMin, yMin
+            for i in range(0, 8):
+                posicao = self.mapa[self.x + self.acoes[i][0]][self.y + self.acoes[i][1]]
+                if posicao == -3:
+                    dx = self.acoes[i][0]
+                    dy = self.acoes[i][1]
+                    return dx, dy
+            self.stuck = True
+            return 0, 0
 
-        self.last = (cod + ((tam + 1) * sinal) % 8, -1 * sinal)    
+        self.last = (cod + ((tam + 1) * sinal) % 8, -1 * sinal)
         return dx, dy
     
     def deliberate(self) -> bool:
@@ -138,7 +140,7 @@ class Explorer(AbstractAgent):
         method at each cycle. Must be implemented in every agent"""
 
         # No more actions, time almost ended
-        if self.rtime < self.mapa[self.x][self.y] + 2: 
+        if self.rtime < self.mapa[self.x][self.y] + 3: 
             # back to base
             dx,dy = self.voltarBase()
             result = self.body.walk(dx, dy)
@@ -167,8 +169,17 @@ class Explorer(AbstractAgent):
             posicao = self.mapa[self.x + self.acoes[i][0]][self.y + self.acoes[i][1]]
             if posicao == -3:
                 self.mapa[self.x + self.acoes[i][0]][self.y + self.acoes[i][1]] = obstacles[i]
+        self.mapa[int(len(self.mapa)/2)][int(len(self.mapa)/2)] = 0
         
         dx, dy = self.explorar(self.mapa, (self.x,self.y))
+        if self.mapa[self.x + dx][self.y + dy] >= 0 and not self.stuck:
+            self.loop += 1
+            if self.loop >= 4:
+                self.stuck = True
+                self.loop = 0
+        self.ult = dx, dy
+        # print(dx)
+        # print(dy)
 
         # Moves the body to another position
         result = self.body.walk(dx, dy)
@@ -230,9 +241,9 @@ class Explorer(AbstractAgent):
         else:
             self.mapa[self.x][self.y] = min + 1.5
 
-        # for y in range(len(self.mapa)):
-        #     for x in range(len(self.mapa)):
-        #         print("{:.1f}".format(self.mapa[x][y]), end= ' ')
+        # for y in range(-1,2):
+        #     for x in range(-1,2):
+        #         print("{:.1f}".format(self.mapa[self.x + x][self.y + y]), end= ' ')
         #     print()
         # print()
 

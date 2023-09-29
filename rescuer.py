@@ -69,7 +69,7 @@ class Rescuer(AbstractAgent):
                     dist = self.distancia_entre_pontos(self.vitimas[i], center)
                     if dist < menor_distancia:
                         menor_distancia = dist
-                        center_index = i
+                        center_index = j
                 self.K_list[center_index].append(self.vitimas[i])
                 lista_centro = self.K_list[center_index]
                 total_x = sum(x for x, _ in lista_centro) + self.K_centers[center_index][0]
