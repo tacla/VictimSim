@@ -13,14 +13,16 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 
-walls_file = "env_walls.txt"
-victims_file = "env_victims.txt"
+# File names (to be Configured)
+walls_file = "../data_teste1/env_walls.txt"
+victims_file = "../data_teste1/env_victims.txt"
 
-# Set grid size
-R = 80
-C = 100
-WIDTH = 960
-HEIGHT = 720
+
+# Set grid size (to be Configured)
+R = 20
+C = 20
+WIDTH = 600
+HEIGHT = 600
 CELLW = WIDTH/C
 CELLH = HEIGHT/R
 
