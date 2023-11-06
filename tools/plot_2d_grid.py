@@ -12,19 +12,22 @@ import pygame
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
+YEL = (255, 255, 0)
 
-# File names (to be Configured)
-walls_file = "../data_teste1/env_walls.txt"
-victims_file = "../data_teste1/env_victims.txt"
+walls_file = "env_walls.txt"
+victims_file = "env_victims.txt"
 
-
-# Set grid size (to be Configured)
-R = 20
-C = 20
-WIDTH = 600
-HEIGHT = 600
+# Set grid size
+R = 80
+C = 100
+WIDTH = 960
+HEIGHT = 700
 CELLW = WIDTH/C
 CELLH = HEIGHT/R
+
+# the base position (to not coincide with walls and victims)
+base_r = 50
+base_c = 50
 
 # counters
 vics_quad=[0]*4  # victims per quadrant
@@ -45,10 +48,12 @@ for r in range(R):
     for c in range(C):
         pygame.draw.rect(screen, BLACK, (c * CELLW, r * CELLH, CELLW, CELLH), 1)
 
+print(f"Stats printed by plot_2d_grid_py\n")
 print(f"\n----------------------------------------")
 print(f"Total of rows......: {R}")
 print(f"Total of cols......: {C}")
 print(f"Total of cells.....: {R*C}")
+print(f"Base position......: ({base_c}, {base_r})")
 
 # Read wall coordinates from file
 with open(walls_file, 'r') as f:
@@ -62,7 +67,8 @@ with open(victims_file, 'r') as f:
 
 tot_vics = len(vict_coords)
 
-
+# Plot the base position as a yellow rectangle
+pygame.draw.rect(screen, YEL, (base_c * CELLW, base_r * CELLH, CELLW, CELLH))
 
 # Plot walls as filled black rectangles
 for c, r in wall_coords:
