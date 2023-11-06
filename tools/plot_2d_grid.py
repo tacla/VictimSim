@@ -1,6 +1,10 @@
 ## Read the walls file with coordinates of walls and the victims file containing
 ## the victims' coordinates and plots the 2D grid.
 ## The 2D grid's origin is at the top left corner. Indexations is (column, row).
+## It prints the metrics per quadrant (victims and walls per quadrant)
+##    upper left | upper right
+##    ------------------------
+##    lower left | lower right
 
 import pygame
 
@@ -9,16 +13,22 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 
-walls_file = "walls.txt"
-victims_file = "victims.txt"
+walls_file = "env_walls.txt"
+victims_file = "env_victims.txt"
 
 # Set grid size
-R = 20
-C = 20
-WIDTH = 800
-HEIGHT = 800
-CELLW = WIDTH/R
-CELLH = HEIGHT/C
+R = 80
+C = 100
+WIDTH = 960
+HEIGHT = 720
+CELLW = WIDTH/C
+CELLH = HEIGHT/R
+
+# counters
+vics_quad=[0]*4  # victims per quadrant
+walls_quad=[0]*4 # walls per quadrant
+tot_vics=0       # total of victims
+tot_walls=0      # total of walls
 
 # Create Pygame window
 pygame.init()
@@ -33,21 +43,68 @@ for r in range(R):
     for c in range(C):
         pygame.draw.rect(screen, BLACK, (c * CELLW, r * CELLH, CELLW, CELLH), 1)
 
+print(f"\n----------------------------------------")
+print(f"Total of rows......: {R}")
+print(f"Total of cols......: {C}")
+print(f"Total of cells.....: {R*C}")
+
 # Read wall coordinates from file
 with open(walls_file, 'r') as f:
     wall_coords = [tuple(map(int, line.strip().split(','))) for line in f]
+
+tot_walls = len(wall_coords)
 
 # Read victims coordinates from file
 with open(victims_file, 'r') as f:
     vict_coords = [tuple(map(int, line.strip().split(','))) for line in f]
 
+tot_vics = len(vict_coords)
+
+
+
 # Plot walls as filled black rectangles
 for c, r in wall_coords:
     pygame.draw.rect(screen, BLACK, (c * CELLW, r * CELLH, CELLW, CELLH))
+    if r < R/2:
+        if c < C/2:
+            walls_quad[0] += 1
+        else:
+            walls_quad[1] += 1
+    else:
+        if c < C/2:
+            walls_quad[2] += 1
+        else:
+            walls_quad[3] += 1
+
+print(f"\n----------------------------------------")
+print(f"Total of walls.....: {tot_walls} ({100*tot_walls/(R*C):.1f}% of the env)")
+print(f"  upper left  quad.: {walls_quad[0]} ({100*walls_quad[0]/tot_walls:.1f}%)")
+print(f"  upper right quad.: {walls_quad[1]} ({100*walls_quad[1]/tot_walls:.1f}%)")
+print(f"  lower left  quad.: {walls_quad[2]} ({100*walls_quad[2]/tot_walls:.1f}%)")
+print(f"  lower right quad.: {walls_quad[3]} ({100*walls_quad[3]/tot_walls:.1f}%)")
+
+
 
 # Plot victims as red circles
 for c, r in vict_coords:
     pygame.draw.circle(screen, (255, 0, 0), (c * CELLW + CELLW / 2, r * CELLH + CELLH / 2), 0.4*min(CELLW,CELLH))
+    if r < R/2:
+        if c < C/2:
+            vics_quad[0] += 1
+        else:
+            vics_quad[1] += 1
+    else:
+        if c < C/2:
+            vics_quad[2] += 1
+        else:
+            vics_quad[3] += 1
+
+print(f"\n------------------------------------------") 
+print(f"Total of victims...: {tot_vics}")
+print(f"  upper left  quad.: {vics_quad[0]} ({100*vics_quad[0]/tot_vics:.1f}%)")
+print(f"  upper right quad.: {vics_quad[1]} ({100*vics_quad[1]/tot_vics:.1f}%)")
+print(f"  lower left  quad.: {vics_quad[2]} ({100*vics_quad[2]/tot_vics:.1f}%)")
+print(f"  lower right quad.: {vics_quad[3]} ({100*vics_quad[3]/tot_vics:.1f}%)")
 
 # Update Pygame display
 pygame.display.update()
