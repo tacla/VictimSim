@@ -5,15 +5,63 @@ import csv
         
 class Fuzzy:
     def __init__(self):
-        self.rules = {} #Mapa das regras inferidas pelo Wang-Mendel
-        self.dic = defaultdict(int) #Dicionario, conta quantas vezes uma regra aparece - 2 passo do wang mendel
+        self.small_rules_set = {} #Mapa das regras inferidas pelo Wang-Mendel
+        self.medium_rules_set = {}
+        self.big_rules_set = {}
+        self.small_dictionary = defaultdict(int) #Dicionario, conta quantas vezes uma regra aparece - 2 passo do wang mendel
+        self.medium_dictionary = defaultdict(int)
+        self.big_dictionary = defaultdict(int)
         self.wang_mendel("datasets/data_800vic/sinais_vitais_com_label.txt")  #Treina com varios arquivos
         self.wang_mendel("datasets/data_12x12_10vic/sinais_vitais.txt")         
         self.wang_mendel("datasets/data_20x20_42vic/sinais_vitais.txt")
         self.wang_mendel("datasets/data_teste_sala/sinais_vitais.txt")
         #self.teste_800vit()
   
-    def fuzzyfy(self,max,var): #Divide cada variavel em 17 grupos - fuzzy triangular
+    def small_fuzzyfy(self,max,var): #Divide cada variavel em 5 grupos - fuzzy triangular
+        fuz_vec = [0,0,0,0,0] #Cada posicao indica o valor fuzzy 
+        if(var < max/4):
+            fuz_vec[0] = -(800/max) * var + 100
+            fuz_vec[1] = (800/max) * var
+        elif(var >= max/4 and var < max/2):
+            fuz_vec[1] = -(800/max) * var + 200
+            fuz_vec[2] = (800/max) * var - 100
+        elif(var >= max/2 and var < max*3/4):
+            fuz_vec[2] = -(800/max) * var + 300
+            fuz_vec[3] = (800/max) * var - 200
+        else:
+            fuz_vec[3] = -(800/max) * var + 400
+            fuz_vec[4] = (800/max) * var - 300
+        return fuz_vec
+  
+    def medium_fuzzyfy(self,max,var): #Divide cada variavel em 9 grupos - fuzzy triangular
+        fuz_vec = [0,0,0,0,0,0,0,0,0] #Cada posicao indica o valor fuzzy 
+        if(var < max/8):
+            fuz_vec[0] = -(800/max) * var + 100
+            fuz_vec[1] = (800/max) * var
+        elif(var >= max/8 and var < max/4):
+            fuz_vec[1] = -(800/max) * var + 200
+            fuz_vec[2] = (800/max) * var - 100
+        elif(var >= max/4 and var < max*3/8):
+            fuz_vec[2] = -(800/max) * var + 300
+            fuz_vec[3] = (800/max) * var - 200
+        elif(var >= max*3/8 and var < max/2):
+            fuz_vec[3] = -(800/max) * var + 400
+            fuz_vec[4] = (800/max) * var - 300
+        elif(var >= max/2 and var < max*5/8):
+            fuz_vec[4] = -(800/max) * var + 500
+            fuz_vec[5] = (800/max) * var - 400
+        elif(var >= max*5/8 and var < max*3/4):
+            fuz_vec[5] = -(800/max) * var + 600
+            fuz_vec[6] = (800/max) * var - 500
+        elif(var >= max*3/4 and var < max*7/8):
+            fuz_vec[6] = -(800/max) * var + 700
+            fuz_vec[7] = (800/max) * var - 600
+        else:
+            fuz_vec[7] = -(800/max) * var + 800
+            fuz_vec[8] = (800/max) * var - 700
+        return fuz_vec
+  
+    def big_fuzzyfy(self,max,var): #Divide cada variavel em 17 grupos - fuzzy triangular
         fuz_vec = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] #Cada posicao indica o valor fuzzy 
         if(var < max/8):
             fuz_vec[0] = -(1600/max) * var + 100
@@ -66,7 +114,9 @@ class Fuzzy:
         return fuz_vec
         
     def wang_mendel(self, path):
-        rules = [] #Todas as regras geradas, mesmo as repetidas
+        s_rules = [] #Todas as regras geradas, mesmo as repetidas
+        m_rules = []
+        b_rules = []
         signals = [] #Vetor das caracteristicas da vitima (pressão, batimentos, etc)
         
         vs_file = os.path.join(path) #Arquivo de teste
@@ -82,32 +132,74 @@ class Fuzzy:
                 signals.append([qp, pf, rf, lb])
                 
         for vic in signals:
-            fuz_qPA = self.fuzzyfy(20,vic[0]+10) #Chama a fuzzyfy para as tres caracteristicas
-            fuz_pulse = self.fuzzyfy(200,vic[1])
-            fuz_fResp = self.fuzzyfy(22,vic[2])
-            rules.append([fuz_qPA.index(max(fuz_qPA)),fuz_pulse.index(max(fuz_pulse)),fuz_fResp.index(max(fuz_fResp)),vic[3]]) #cria uma regra, usando o grupo com maior valor obtido para cada variavel
+            fuz_qPA = self.small_fuzzyfy(20,vic[0]+10) #Chama a fuzzyfy para as tres caracteristicas
+            fuz_pulse = self.small_fuzzyfy(200,vic[1])
+            fuz_fResp = self.small_fuzzyfy(22,vic[2])
+            s_rules.append([fuz_qPA.index(max(fuz_qPA)),fuz_pulse.index(max(fuz_pulse)),fuz_fResp.index(max(fuz_fResp)),vic[3]]) #cria uma regra, usando o grupo com maior valor obtido para cada variavel
+            fuz_qPA = self.medium_fuzzyfy(20,vic[0]+10) #Chama a fuzzyfy para as tres caracteristicas
+            fuz_pulse = self.medium_fuzzyfy(200,vic[1])
+            fuz_fResp = self.medium_fuzzyfy(22,vic[2])
+            m_rules.append([fuz_qPA.index(max(fuz_qPA)),fuz_pulse.index(max(fuz_pulse)),fuz_fResp.index(max(fuz_fResp)),vic[3]])
+            fuz_qPA = self.big_fuzzyfy(20,vic[0]+10) #Chama a fuzzyfy para as tres caracteristicas
+            fuz_pulse = self.big_fuzzyfy(200,vic[1])
+            fuz_fResp = self.big_fuzzyfy(22,vic[2])
+            b_rules.append([fuz_qPA.index(max(fuz_qPA)),fuz_pulse.index(max(fuz_pulse)),fuz_fResp.index(max(fuz_fResp)),vic[3]])
             
-        for rule in rules:
+        for rule in s_rules:
             precedent = tuple(rule[:3])  #A tupla das variaveis precedentes
             consequent = rule[3]  #O grupo de gravidade (Verdadeiro)
 
-            if precedent not in self.rules or self.dic[precedent] < self.dic[precedent + (consequent,)]: #Adiciona as regras unicas se for a primeira aparição, ou se a regra apareceu mais vezes
-                self.rules[precedent] = consequent
+            if precedent not in self.small_rules_set or self.small_dictionary[precedent] < self.small_dictionary[precedent + (consequent,)]: #Adiciona as regras unicas se for a primeira aparição, ou se a regra apareceu mais vezes
+                self.small_rules_set[precedent] = consequent
 
-            self.dic[precedent + (consequent,)] += 1
+            self.small_dictionary[precedent + (consequent,)] += 1
+            
+        for rule in m_rules:
+            precedent = tuple(rule[:3])  #A tupla das variaveis precedentes
+            consequent = rule[3]  #O grupo de gravidade (Verdadeiro)
+
+            if precedent not in self.medium_rules_set or self.medium_dictionary[precedent] < self.medium_dictionary[precedent + (consequent,)]: #Adiciona as regras unicas se for a primeira aparição, ou se a regra apareceu mais vezes
+                self.medium_rules_set[precedent] = consequent
+
+            self.medium_dictionary[precedent + (consequent,)] += 1
+            
+        for rule in b_rules:
+            precedent = tuple(rule[:3])  #A tupla das variaveis precedentes
+            consequent = rule[3]  #O grupo de gravidade (Verdadeiro)
+
+            if precedent not in self.big_rules_set or self.big_dictionary[precedent] < self.big_dictionary[precedent + (consequent,)]: #Adiciona as regras unicas se for a primeira aparição, ou se a regra apareceu mais vezes
+                self.big_rules_set[precedent] = consequent
+
+            self.big_dictionary[precedent + (consequent,)] += 1
 
            
     def defuzzyfy(self,vec): #Para um vetor de vitimas com pressao, batimentos e respiração, retorna um vetor com os grupos inferidos pelo processo fuzzy
         out = []
         for vic in vec:
             grav = [0,0,0,0] #Vetor que armazena a maior inferencia para cada grupo, dentre todas as regras
-            fuz_qPA = self.fuzzyfy(20,vic[0]+10)
-            fuz_pulse = self.fuzzyfy(200,vic[1])
-            fuz_fResp = self.fuzzyfy(22,vic[2])
-            for rule, value in self.rules.items(): #Testa todas as regras
-                smallest_fuzzy = min(fuz_qPA[rule[0]], fuz_pulse[rule[1]], fuz_fResp[rule[2]]) #Como é um and, pega sempre o menor valor
+            big_fuz_qPA = self.big_fuzzyfy(20,vic[0]+10)
+            big_fuz_pulse = self.big_fuzzyfy(200,vic[1])
+            big_fuz_fResp = self.big_fuzzyfy(22,vic[2])
+            medium_fuz_qPA = self.medium_fuzzyfy(20,vic[0]+10)
+            medium_fuz_pulse = self.medium_fuzzyfy(200,vic[1])
+            medium_fuz_fResp = self.medium_fuzzyfy(22,vic[2])
+            small_fuz_qPA = self.small_fuzzyfy(20,vic[0]+10)
+            small_fuz_pulse = self.small_fuzzyfy(200,vic[1])
+            small_fuz_fResp = self.small_fuzzyfy(22,vic[2])
+            for rule, value in self.big_rules_set.items(): #Testa todas as regras
+                smallest_fuzzy = min(big_fuz_qPA[rule[0]], big_fuz_pulse[rule[1]], big_fuz_fResp[rule[2]]) #Como é um and, pega sempre o menor valor
                 if smallest_fuzzy > grav[value - 1]: #Armazena se o resultado for maior que o ja existente (para o grupo)
                     grav[value - 1] = smallest_fuzzy
+            if grav == [0,0,0,0]:
+                for rule, value in self.medium_rules_set.items(): #Testa todas as regras
+                    smallest_fuzzy = min(medium_fuz_qPA[rule[0]], medium_fuz_pulse[rule[1]], medium_fuz_fResp[rule[2]]) #Como é um and, pega sempre o menor valor
+                    if smallest_fuzzy > grav[value - 1]: #Armazena se o resultado for maior que o ja existente (para o grupo)
+                        grav[value - 1] = smallest_fuzzy
+            if grav == [0,0,0,0]:
+                for rule, value in self.small_rules_set.items(): #Testa todas as regras
+                    smallest_fuzzy = min(small_fuz_qPA[rule[0]], small_fuz_pulse[rule[1]], small_fuz_fResp[rule[2]]) #Como é um and, pega sempre o menor valor
+                    if smallest_fuzzy > grav[value - 1]: #Armazena se o resultado for maior que o ja existente (para o grupo)
+                        grav[value - 1] = smallest_fuzzy
             out.append(grav.index(max(grav))+1)
         return out
     
@@ -161,27 +253,27 @@ class Fuzzy:
         print(f"Group 4: {f_measure_4:.3f}")
         print(f"\nTOTAL ACCURACY: {accuracy:.3f}\n")
         
-    # def teste_800vit(self):
-    #     signals = []
+    def teste_800vit(self):
+        signals = []
         
-    #     vs_file = os.path.join("datasets/data_800vic/sinais_vitais_com_label.txt")
+        vs_file = os.path.join("datasets/data_800vic/sinais_vitais_com_label.txt")
     
-    #     with open(vs_file, 'r') as csvfile:
-    #         csvreader = csv.reader(csvfile)
-    #         for row in csvreader:
-    #             qp = float(row[3]) #Pressao
-    #             pf = float(row[4]) #Batimentos
-    #             rf = float(row[5]) #Respiração
-    #             lb = int(row[7])  #Grupo verdadeiro 
+        with open(vs_file, 'r') as csvfile:
+            csvreader = csv.reader(csvfile)
+            for row in csvreader:
+                qp = float(row[3]) #Pressao
+                pf = float(row[4]) #Batimentos
+                rf = float(row[5]) #Respiração
+                lb = int(row[7])  #Grupo verdadeiro 
                 
-    #             signals.append([qp, pf, rf, lb])
+                signals.append([qp, pf, rf, lb])
         
-    #     original = []
-    #     saida = []
-    #     for x in signals:
-    #         original.append(tuple(x[:3]))
-    #         saida.append(x[3])
+        original = []
+        saida = []
+        for x in signals:
+            original.append(tuple(x[:3]))
+            saida.append(x[3])
         
-    #     teste = self.defuzzyfy(original)
+        teste = self.defuzzyfy(original)
         
-    #     self.measurement(teste,saida)
+        self.measurement(teste,saida)
