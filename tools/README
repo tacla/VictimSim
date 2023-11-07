@@ -7,9 +7,9 @@ These programs may need the following config files:
 
 edit_draw_2d_grid.py: read the walls.txt file and victims.txt file and allows the user to add/remove walls and add/remove victims.
 
-generate_walls_and_victims.py: Generate walls from a input file with the following format per line: col_ini,row_ini,col_end,row_end. Besides, if you define N_VICTIMS > 0, the program generates N_VICTIMS
+*generate_walls_and_victims.py*: Generate walls from a input file with the following format per line: col_ini,row_ini,col_end,row_end. Besides, if you define N_VICTIMS > 0, the program generates N_VICTIMS
 situated in random positions (except at any coordinate where there is a already wall). It creates two output files: walls.txt and victims.txt
 
-plot_2d_grid.py: Read the walls.txt and the victims.txt and plots the 2D grid. The origin of the 2D grid is at the top left corner. Indexation is x,y = col, row
+*plot_2d_grid.py*: Read the walls.txt and the victims.txt and plots the 2D grid. The origin of the 2D grid is at the top left corner. Indexation is x,y = col, row
 
-renumber_victim_id.py: read the sinais_vitais.txt and renumber the first column from 1 to n (the id of victims). When you copy one or more lines of sinais_vitais.txt, renumbering the victims sequential number is necessary.
+*rewrite_victim_id.py*: read the sinais_vitais.txt and renumber the first column from 1 to n (the id of victims). When you copy one or more lines of sinais_vitais.txt, renumbering the victims sequential number is necessary.
