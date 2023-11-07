@@ -1,8 +1,13 @@
 ## Compara as predições de um classificador sobre a classe de gravidade das vítimas e de um regressor
 ## sobre o valor de gravidade contra um arquivo de referência.
-# Os arquivos a serem comparados possuem o formato
-## <id, x, y, gravity, class>
-## Pressupõe que os arquivos de referência e de predição têm o mesmo tamanho e casam perfeitamente.
+##
+## Os arquivos a serem comparados são: 
+##    file_target: arquivo com os resultados de referência
+##    file_predict: arquivo com os resultados preditos
+##    formato dos dois arquivoos: <id, x, y, gravity, class>
+##
+## Os arquivos de referência e de predição devem ter tamanhos idênticos.
+## Os casamentos das linhas são feitos por leitura sincronizada.
 
 import numpy as np
 import csv
