@@ -1,0 +1,125 @@
+pygame 2.4.0 (SDL 2.28.4, Python 3.11.5)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+from env: ag EXPLORER succesfully terminated, it is at the base
+from env: ag EXPLORER succesfully terminated, it is at the base
+from env: ag EXPLORER succesfully terminated, it is at the base
+35
+from env: ag EXPLORER succesfully terminated, it is at the base
+from env: ag RESCUER succesfully terminated, it is at the base
+from env: no active or idle agent scheduled for execution... terminating
+
+
+
+*** Numbers of Victims in the Environment ***
+Critical victims   (V1) =   5
+Instable victims   (V2) =  21
+Pot. inst. victims (V3) =   8
+Stable victims     (V4) =   8
+--------------------------------------
+Total of victims   (V)  =  42
+
+
+*** Final results per agent ***
+
+[ Agent RESCUER ]
+
+*** Used time ***
+15.0 of 400.0
+No found victims
+
+saved victims: (id, severity, gravity)
+(9, 3, 73.4) (15, 1, 24.4) 
+
+Critical victims saved     (Vs1) =   1 out of 5 (20.0)%
+Instable victims saved     (Vs2) =   0 out of 21 (0.0)%
+Pot. inst. victims saved   (Vs3) =   1 out of 8 (12.5)%
+Stable victims saved       (Vs4) =   0 out of 8 (0.0)%
+--------------------------------------
+Total of saved victims     (Vs)  =   2 (4.76%)
+Weighted saved victims per severity (Vsg) = 0.07
+
+Sum of gravities of all saved victims = 97.77 of a total of 1983.64
+  % of gravities of all saved victims = 0.05
+
+[ Agent EXPLORER ]
+
+*** Used time ***
+95.0 of 100.0
+
+found victims: (id, severity, gravity)
+(7, 3, 56.7) (8, 2, 43.8) (15, 1, 24.4) (21, 1, 13.3) (25, 4, 81.5) (31, 3, 68.3) (41, 4, 85.2) 
+
+Critical victims found     (Ve1) =   2 out of 5 (40.0)%
+Instable victims found     (Ve2) =   1 out of 21 (4.8)%
+Pot. inst. victims found   (Ve3) =   2 out of 8 (25.0)%
+Stable victims found       (Ve4) =   2 out of 8 (25.0)%
+--------------------------------------
+Total of found victims     (Ve)  =   7 (16.67%)
+Weighted found victims per severity (Veg) = 0.18
+
+Sum of gravities of all found victims = 373.21 of a total of 1983.64
+  % of gravities of all found victims = 0.19
+No saved victims
+
+[ Agent EXPLORER ]
+
+*** Used time ***
+96.5 of 100.0
+
+found victims: (id, severity, gravity)
+(0, 1, 19.1) (12, 3, 61.6) (23, 2, 39.9) (26, 2, 49.0) (27, 3, 57.6) (28, 4, 77.6) (29, 4, 77.2) (34, 3, 56.4) (36, 2, 41.5) (40, 2, 27.1) 
+
+Critical victims found     (Ve1) =   1 out of 5 (20.0)%
+Instable victims found     (Ve2) =   4 out of 21 (19.0)%
+Pot. inst. victims found   (Ve3) =   3 out of 8 (37.5)%
+Stable victims found       (Ve4) =   2 out of 8 (25.0)%
+--------------------------------------
+Total of found victims     (Ve)  =  10 (23.81%)
+Weighted found victims per severity (Veg) = 0.22
+
+Sum of gravities of all found victims = 506.83 of a total of 1983.64
+  % of gravities of all found victims = 0.26
+No saved victims
+
+[ Agent EXPLORER ]
+
+*** Used time ***
+96.5 of 100.0
+
+found victims: (id, severity, gravity)
+(6, 2, 37.2) (10, 3, 50.3) (16, 2, 40.5) (30, 4, 76.5) (38, 2, 42.8) (39, 2, 25.6) 
+
+Critical victims found     (Ve1) =   0 out of 5 (0.0)%
+Instable victims found     (Ve2) =   4 out of 21 (19.0)%
+Pot. inst. victims found   (Ve3) =   1 out of 8 (12.5)%
+Stable victims found       (Ve4) =   1 out of 8 (12.5)%
+--------------------------------------
+Total of found victims     (Ve)  =   6 (14.29%)
+Weighted found victims per severity (Veg) = 0.13
+
+Sum of gravities of all found victims = 272.98 of a total of 1983.64
+  % of gravities of all found victims = 0.14
+No saved victims
+
+[ Agent EXPLORER ]
+
+*** Used time ***
+97.5 of 100.0
+
+found victims: (id, severity, gravity)
+(3, 2, 47.1) (4, 2, 25.2) (5, 2, 28.0) (9, 3, 73.4) (11, 4, 80.2) (13, 4, 85.1) (17, 2, 36.3) (19, 1, 13.3) (32, 2, 36.8) (33, 2, 44.0) (35, 2, 28.1) (37, 3, 68.2) 
+
+Critical victims found     (Ve1) =   1 out of 5 (20.0)%
+Instable victims found     (Ve2) =   7 out of 21 (33.3)%
+Pot. inst. victims found   (Ve3) =   2 out of 8 (25.0)%
+Stable victims found       (Ve4) =   2 out of 8 (25.0)%
+--------------------------------------
+Total of found victims     (Ve)  =  12 (28.57%)
+Weighted found victims per severity (Veg) = 0.28
+
+Sum of gravities of all found victims = 565.54 of a total of 1983.64
+  % of gravities of all found victims = 0.29
+No saved victims
+
+--------------
+from env: Tecle qualquer coisa para encerrar >>
