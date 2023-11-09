@@ -1,0 +1,18 @@
+----------------------------------------
+Total of rows......: 80
+Total of cols......: 100
+Total of cells.....: 8000
+
+----------------------------------------
+Total of walls.....: 1127 (14.1% of the env)
+  upper left  quad.: 389 (34.5%)
+  upper right quad.: 254 (22.5%)
+  lower left  quad.: 300 (26.6%)
+  lower right quad.: 184 (16.3%)
+
+------------------------------------------
+Total of victims...: 225
+  upper left  quad.: 68 (30.2%)
+  upper right quad.: 51 (22.7%)
+  lower left  quad.: 65 (28.9%)
+  lower right quad.: 41 (18.2%)
