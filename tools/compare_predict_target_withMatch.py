@@ -7,7 +7,7 @@
 ##    formato dos dois arquivoos: <id, x, y, gravity, class>
 
 ## Os arquivos de referência e de predição podem ter tamanhos diferentes: o da predição pode
-## ser menor do que o de referência. Os casamentos são feitos por igualdade de <id, x, y>.
+## ser menor do que o de referência. Os casamentos são feitos por igualdade de <id>.
 ## Resultados são calculados somente para casamentos perfeitos desta tripla.
 
 import csv
@@ -41,7 +41,7 @@ with open(file_target, 'r') as target_file, open(file_predict, 'r') as predict_f
     target_dict = {}
 
     for target_row in target_reader:
-        key = tuple(target_row[:3])         # Columns 1, 2, and 3 as a tuple <id, x, y>
+        key = target_row[0]                        # <id>
         grav_value = float(target_row[-2])  # before last column: gravity value
         grav_label = int(target_row[-1])    # Last column (integer): gravity label
         target_dict[key] = (grav_value, grav_label)
@@ -51,7 +51,7 @@ with open(file_target, 'r') as target_file, open(file_predict, 'r') as predict_f
 
     # Iterate through file_predict and compare with file_target
     for predict_row in predict_reader:
-        key = tuple(predict_row[:3])  # Columns 1, 2, and 3 as a tuple
+        key = predict_row[0]  # only id of the victim
         predict_len += 1
 
         if key in target_dict:
