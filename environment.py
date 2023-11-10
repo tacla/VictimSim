@@ -9,6 +9,7 @@ import csv
 import time
 from abstract_agent import AbstractAgent
 from physical_agent import PhysAgent
+from fuzzy import Fuzzy
 
 
 ## Class Environment
@@ -46,6 +47,8 @@ class Env:
         self.signals = []      # positional: the vital signals of the victims [[i,s1,...,s5,g,l],...]
         self.found   = [[]]    # positional: Physical agents that found each victim [[ag1] [ag2, ag3], ...] ag1 found vict 0, ag2 and 3, vict 1, ... 
         self.saved   = [[]]    # positional: Physical agents that saved each victim 
+        
+        self.fuz = Fuzzy() #Cria objeto fuzzy
         
         # Read the environment config file
         self.__read_config()
@@ -104,6 +107,15 @@ class Env:
         if self.nb_of_victims < len(self.signals):
             print("from env: nb of victims of env_victims.txt less than vital signals")
             print("from env: Assuming nb of victims of env_victims.txt")
+            
+        victims = [[var[3], var[4], var[5]] for var in self.signals]   #Cria vetor de vitimas contendo variaveis pressao, batimentos e respiração
+        out = self.fuz.defuzzyfy(victims) #Saida do fuzzy
+        
+        real_gravity = []    #Vetor com grupos originais, para comparação
+        for vic in self.signals:
+            real_gravity.append(vic[7])
+        
+        self.fuz.measurement(out,real_gravity)  #Realiza as contas entre o vetor inferido e o original
 
         # Set up found and saved victims' lists 
         self.found = [[] for v in range(self.nb_of_victims)]
@@ -343,6 +355,3 @@ class Env:
             #saved = body.get_saved_victims()
             #self.__print_victims(saved, "saved","s")
  
-            
-
-
