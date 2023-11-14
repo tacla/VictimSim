@@ -208,6 +208,8 @@ class Env:
         """ This public method is the engine of the simulator. It calls the deliberate
         method of each ACTIVE agent situated in the environment. Then, it updates the state
         of the agents and of the environment"""
+
+        cycle = 0
         # Set up Pygame
         pygame.init()
 
@@ -226,7 +228,7 @@ class Env:
         while running:
             # Handle events
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:                  
+                if event.type == pygame.QUIT:                 
                     running = False
                     
             # control whether or not there are active or idle agents
@@ -239,6 +241,9 @@ class Env:
                 if body.state == PhysAgent.ACTIVE:
                     active_or_idle = True
                     more_actions_to_do = body.mind.deliberate()
+
+                    if cycle % 50 == 0:
+                        print(f"from env: cycle {cycle} {body.mind.NAME} remaining: {body.rtime}")
 
                     # Test if the agent exceeded the time limit
                     if body.end_of_time():
@@ -261,7 +266,9 @@ class Env:
                 
             self.__draw()
 
-            # Show metrics
+            cycle += 1
+
+            # Show metrics when there is no more active or idle agents
             if not active_or_idle:
                 print("from env: no active or idle agent scheduled for execution... terminating")
                 #self.print_results()
@@ -280,6 +287,7 @@ class Env:
         @param type_str: it is a string for composing the pring
         @param sub: it is a character representing the metric"""
 
+        idents = ' ' * ident
 
         if len(victims) > 0:
             sev = []
@@ -290,7 +298,6 @@ class Env:
                 grav.append(self.gravity[v])
                 tot_grav = tot_grav + self.gravity[v]
 
-            idents = ' ' * ident
             print(f"\n{idents}{type_str} victims: (id, severity, gravity)")
             for i in range(len(victims)):
                 print(f"{idents}({victims[i]:d}, {sev[i]:d}, {grav[i]:.1f})", end=' ')
