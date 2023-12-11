@@ -16,7 +16,7 @@ from sklearn.metrics import confusion_matrix, classification_report, accuracy_sc
 
 # Input CSV file names
 file_target = 'file_target.txt'
-file_predict = 'file_predict.txt'
+file_predict = 'salvas.txt'
 target_len = 0
 predict_len = 0
 
@@ -90,9 +90,9 @@ print(f"{'-'*60}")
 print(f"CLASSIFICATION METRICS")
 
 # Print the last value confusion matrix, precision, recall, F1-score, and accuracy
-conf_matrix = confusion_matrix(actual_labels, predicted_labels)
+conf_matrix = confusion_matrix(actual_labels, predicted_labels, labels=[1,2,3,4])
 accuracy = accuracy_score(actual_labels, predicted_labels)
-class_report = classification_report(actual_labels, predicted_labels, target_names=['Critico', 'Instavel', 'Pot Estavel', 'Estavel'])
+class_report = classification_report(actual_labels, predicted_labels, labels=[1,2,3,4], target_names=['Critico', 'Instavel', 'Pot Estavel', 'Estavel'])
 
 print("\nConfusion Matrix:")
 print(conf_matrix)
