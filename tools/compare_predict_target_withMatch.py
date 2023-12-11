@@ -92,7 +92,7 @@ print(f"CLASSIFICATION METRICS")
 # Print the last value confusion matrix, precision, recall, F1-score, and accuracy
 conf_matrix = confusion_matrix(actual_labels, predicted_labels, labels=[1,2,3,4])
 accuracy = accuracy_score(actual_labels, predicted_labels)
-class_report = classification_report(actual_labels, predicted_labels, labels=[1,2,3,4], target_names=['Critico', 'Instavel', 'Pot Estavel', 'Estavel'])
+class_report = classification_report(actual_labels, predicted_labels, labels=[1,2,3,4], target_names=['Critico', 'Instavel', 'Pot Estavel', 'Estavel'], zero_division=0)
 
 print("\nConfusion Matrix:")
 print(conf_matrix)
