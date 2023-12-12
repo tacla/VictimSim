@@ -81,7 +81,17 @@ cluster_data = {}
 
 for file_name in cluster_files:
     with open(os.path.join(cluster_folder, file_name), 'r') as f:
-        cluster = [tuple(map(int, line.strip().split(','))) for line in f]
+        cluster = []
+        for line in f:
+            elements = line.strip().split(',')
+            converted_elements = []
+            for i, element in enumerate(elements):
+                if i == 3:  # Assuming the fourth column contains the severity (a float)
+                    converted_elements.append(float(element))
+                else:       # all other elements are integers
+                    converted_elements.append(int(element))
+            cluster.append(tuple(converted_elements))
+
         cluster_data[file_name] = cluster
         
 # Create Pygame window
