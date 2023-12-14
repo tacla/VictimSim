@@ -2,6 +2,9 @@
 ## the victims' coordinates, and a folder containing clusters of victims and
 ## plots the 2D grid.
 ##
+## Each cluster file has no header and the format for each line is as follows:
+## victim id(int), column or x(int), row or y(int), severity (float), sev. label (int)
+##
 ## The 2D grid's origin is at the top left corner. Indexations is (column, row).
 ## It prints the metrics per quadrant (victims and walls per quadrant)
 ##    upper left | upper right
